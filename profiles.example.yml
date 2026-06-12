@@ -1,0 +1,16 @@
+# profiles.yml の公開用サンプル（実際の認証情報は書かない）
+# 実物は ~/.dbt/profiles.yml に置き、GitHub にはコミットしない。
+
+osaka_fudosan_dataanalysis:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: oauth            # または service-account
+      project: your-gcp-project-id
+      dataset: osaka_real_estate
+      location: asia-northeast1
+      threads: 4
+      job_execution_timeout_seconds: 300
+      # method: service-account の場合のみ:
+      # keyfile: /path/to/service-account.json  ← リポジトリ外に置く

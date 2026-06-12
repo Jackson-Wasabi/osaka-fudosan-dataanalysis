@@ -1,0 +1,36 @@
+# raw データは公開しない（手順書 v9 GitHub 公開ルール）
+# ディレクトリ構造の再現用に .gitkeep のみ追跡する
+data/raw/*
+!data/raw/.gitkeep
+data/gis/raw/*
+!data/gis/raw/.gitkeep
+
+# 認証情報・秘密情報
+.env
+*.env
+profiles.yml
+**/profiles.yml
+*service-account*.json
+*credentials*.json
+*.pem
+*.key
+
+# dbt 生成物
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+logs/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Tableau 抽出など大容量バイナリ
+*.hyper
+*.twbx
