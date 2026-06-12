@@ -1,5 +1,11 @@
 # 作業ログ (work_log)
 
+## 2026-06-12 — data/samples: 公開用サンプル追加
+
+- `data/samples/osaka_condo_seiyaku_sample.csv`: 2025年成約CSVの先頭10行（UTF-8変換）
+- `data/samples/README.md`: 出典・取得条件・21カラムの説明・GISサンプルの追加予定を記載
+- 判断: raw全体はコミットしない（成約価格情報の再配布規約が不明確なため）。構造理解用の少量抜粋＋出典明記＋スクリプトによる再現性で代替（decision_log 参照）
+
 ## 2026-06-12 — git リポジトリ初期化・初回コミット
 
 - `git init -b main`（ローカルのみ。GitHub への push は Step 13 で実施）
