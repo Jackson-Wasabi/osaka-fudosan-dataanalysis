@@ -1,5 +1,54 @@
 # 作業ログ (work_log)
 
+## 2026-06-12 — raw 再ロードと「列と値の対応」検証完了
+
+### 経緯
+- データセット `osaka_real_estate` が削除されていることを検知（プロジェクトは健在）→ ユーザー指示により再作成・再ロード
+- sql/checks/01_raw_load_validation.sql も消失していたため再作成（未コミットだったため git から復元不可。以後は作成都度コミットを検討）
+
+### 再ロード結果（全9ロード成功・内容無加工）
+- raw_transactions 47,386 / raw_station_master_2024 10,235 / _2025 10,234 / raw_land_price_2024 1,715 / _2025 1,687 — すべてソースと一致
+
+### 列と値の対応検証（カラムシフト検出）
+- raw_transactions: 13項目のドメイン検査（種類・区分・市区町村コード・都道府県・徒歩分・価格・面積・建築年・構造・取引時期・改装 等）**すべて0件 = 列ズレなし**
+- 改装列の実値域は「改装済み」(2,512件) と空欄 (44,874件) のみで「未改装」は存在しない → 空欄は未改装/不明の区別不能（renovation_unknown_flag 設計に反映する）
+- GIS: ソースCSVとBQで 行数・路線数(552)・事業者数(176)・駅名数(8,503)・座標合計値が完全一致（station_master_2025）、地価も同様に一致（land_price_2025）
+- 教訓: bq へ日本語を含むクエリを stdin で渡すと cp932 誤変換でリテラルが壊れる → **PYTHONUTF8=1 + 引数渡し**で解決（errors_and_fixes 参照）
+
+## 2026-06-12 — Step 3〜4: 投入前確認・BigQuery raw 投入
+
+### Step 3 投入前確認（scripts/precheck_transactions.py）
+- ヘッダー: 5年分とも21列で完全一致
+- 空文字率: 取引価格・面積・間取り 0% / 最寄駅名 0.3〜2.9% / 徒歩分 6.0〜8.8% / 建築年 0.2〜2.8% / **改装 94.1〜95.8%**（renovation_unknown_flag 設計の妥当性を裏付け）
+- 特殊値: 徒歩分に範囲表記47件（「30分～60分」44、「1H30～2H」2、「1H～1H30」1）。面積・建築年・価格の非数値は0件
+- 完全重複行: 2021:56 / 2022:46 / 2023:68 / 2024:60 / 2025:100（計330行。staging で重複の扱いを決定する）
+
+### GIS 変換（scripts/gis_to_csv.py）
+- ZIP展開: N02-24/25、L01-24/25 → data/gis/raw/ 配下（ZIP原本保持）
+- GeoJSON→CSV（属性値は無変更、ジオメトリから lon/lat のみ算出）→ data/gis/processed/
+  - station_master_2024.csv: 10,235行（全国） / station_master_2025.csv: 10,234行
+  - land_price_2024.csv: 1,715行×146列 / land_price_2025.csv: 1,687行×148列（大阪府）
+
+### BigQuery 投入
+- GCPプロジェクト新規作成: `osaka-fudosan-dataanalysis`（課金は旧プロジェクトと同一アカウントに紐付け）
+- データセット: `osaka_real_estate`（asia-northeast1）
+- ロード（全列STRING・as-is・ヘッダースキップ。成約CSVはcp932→UTF-8変換コピーを使用、rawファイルは無変更）:
+
+| テーブル | 行数 | ソースとの一致 |
+|---|---|---|
+| raw_transactions（2021〜2025の5ファイル追記） | 47,386 | 一致 |
+| raw_station_master_2024 / _2025 | 10,235 / 10,234 | 一致 |
+| raw_land_price_2024 / _2025 | 1,715 / 1,687 | 一致 |
+
+### 投入後検証
+- 件数: 全テーブルでソースCSVと完全一致
+- raw_transactions: 価格 min 100万円〜max 8.2億円（外れ値候補は Step 5 EDA で分類）、面積 15〜1,960㎡、年別の空欄数は投入前確認と整合
+- 駅: 駅名空欄0・座標NULL0・経緯度は日本全域の範囲内
+- 地価: 座標は大阪府の範囲内（lon 135.1〜135.7 / lat 34.3〜35.0）
+
+### 次にやること
+- Step 5: EDA・外れ値確認（sql/checks/ に確認SQLを作成）
+
 ## 2026-06-12 — data/samples: 公開用サンプル追加
 
 - `data/samples/osaka_condo_seiyaku_sample.csv`: 2025年成約CSVの先頭10行（UTF-8変換）
