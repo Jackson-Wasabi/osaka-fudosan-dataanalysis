@@ -1,9 +1,9 @@
 ﻿section,step,cnt
 A_funnel,0_全件(大阪府),47386
 A_funnel,1_大阪市内,24613
-A_funnel,2_+面積20-55,7007
-A_funnel,3_+徒歩20分以内,6652
-A_funnel,4_+築5-50年,5588
-A_funnel,5_+価格500-8000万,5392
-B_station,駅数(条件後10件以上),107
-B_station,駅数(条件後1件以上),174
+A_funnel,2_+面積20-60,9368
+A_funnel,3_+徒歩20分以内,8972
+A_funnel,4_+築5-60年,8044
+A_funnel,5_+価格500万以上,7796
+B_station,駅数(条件後10件以上),134
+B_station,駅数(条件後1件以上),188

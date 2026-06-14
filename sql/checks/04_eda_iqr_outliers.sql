@@ -19,7 +19,8 @@ WITH base AS (
     CASE WHEN age IS NULL THEN '不明'
          WHEN age <= 10 THEN '築0-10年' WHEN age <= 20 THEN '築11-20年'
          WHEN age <= 30 THEN '築21-30年' WHEN age <= 40 THEN '築31-40年'
-         ELSE '築41年以上' END AS band
+         WHEN age <= 50 THEN '築41-50年' WHEN age <= 60 THEN '築51-60年'
+         ELSE '築61年以上' END AS band
   FROM base WHERE pps IS NOT NULL
 ),
 stats AS (
