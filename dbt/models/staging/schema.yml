@@ -1,0 +1,51 @@
+version: 2
+
+sources:
+  - name: osaka_real_estate
+    database: osaka-fudosan-dataanalysis
+    schema: osaka_real_estate
+    tables:
+      - name: raw_transactions
+      - name: raw_station_master_2025
+      - name: raw_land_price_2025
+
+models:
+  - name: stg_transactions
+    description: "成約価格情報のstagingモデル。大阪市スコープ・型変換・D-002〜D-011のフラグ付与・スコープ判定済み。"
+    columns:
+      - name: price
+        description: "成約価格（円）"
+        tests:
+          - not_null
+      - name: area_sqm
+        description: "専有面積（m²）"
+        tests:
+          - not_null
+      - name: scope_flag
+        description: "分析スコープ内=TRUE / 対象外=FALSE（D-003・D-011）"
+        tests:
+          - not_null
+      - name: fold_a_split
+        description: "Fold A の分割ラベル（train/test）"
+        tests:
+          - accepted_values:
+              values: ['train', 'test']
+      - name: fold_b_split
+        description: "Fold B の分割ラベル（train/test/exclude）"
+        tests:
+          - accepted_values:
+              values: ['train', 'test', 'exclude']
+
+  - name: stg_station_master
+    description: "駅マスタ（N02-2025）のstagingモデル。D-006の3段階正規化済み。"
+    columns:
+      - name: station_name
+        description: "正規化後の駅名（intermediate層での結合キー）"
+        tests:
+          - not_null
+
+  - name: stg_land_price
+    description: "公示価格（L01-2025）のstagingモデル。大阪市・型変換済み。"
+    columns:
+      - name: land_price_per_sqm
+        description: "公示価格（円/m²）"

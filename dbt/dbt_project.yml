@@ -1,0 +1,24 @@
+name: osaka_fudosan_dataanalysis
+version: '1.0.0'
+config-version: 2
+
+profile: osaka_fudosan_dataanalysis
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  osaka_fudosan_dataanalysis:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: view
+      +schema: intermediate
+    marts:
+      +materialized: table
+      +schema: marts
