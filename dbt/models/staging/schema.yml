@@ -13,6 +13,14 @@ models:
   - name: stg_transactions
     description: "成約価格情報のstagingモデル。大阪市スコープ・型変換・D-002〜D-011のフラグ付与・スコープ判定済み。"
     columns:
+      - name: city_name
+        description: "市区町村名（例: 大阪市北区）"
+      - name: district_name
+        description: "地区名（大字・丁目）"
+      - name: station_name_raw
+        description: "最寄り駅名（元データ・未正規化）"
+      - name: walk_minutes
+        description: "最寄り駅からの徒歩分数"
       - name: price
         description: "成約価格（円）"
         tests:
@@ -21,31 +29,85 @@ models:
         description: "専有面積（m²）"
         tests:
           - not_null
-      - name: scope_flag
-        description: "分析スコープ内=TRUE / 対象外=FALSE（D-003・D-011）"
-        tests:
-          - not_null
+      - name: price_per_sqm
+        description: "㎡単価（成約価格 ÷ 専有面積、円/m²）"
+      - name: building_age_raw
+        description: "築年数（補正前。成約年 − 建築年）"
+      - name: built_year
+        description: "建築年（元データ。例: 2013年）"
+      - name: layout
+        description: "間取り（例: ２ＬＤＫ）"
+      - name: building_structure
+        description: "建物構造（例: ＲＣ）"
+      - name: renovation
+        description: "改装状況（元データ。空欄=不明、改装済み）"
+      - name: trade_period
+        description: "取引時期（元データ。例: 2025年第1四半期）"
+      - name: trade_year
+        description: "取引年（trade_periodから抽出）"
+      - name: trade_quarter
+        description: "取引四半期（1〜4）"
+      - name: trade_circumstances
+        description: "取引の事情等（特殊事情の記載）"
+      - name: building_age_years
+        description: "築年数（D-008: マイナスは0に補正済み）"
+      - name: is_negative_age
+        description: "築年数マイナス補正フラグ（D-008。補正した行=1）"
+      - name: renovation_unknown_flag
+        description: "改装状況不明フラグ（D-007。renovation空欄=1）"
+      - name: renovation_done_flag
+        description: "改装済みフラグ（renovation='改装済み'=1）"
+      - name: outlier_pps_flag
+        description: "㎡単価5万円/m²未満フラグ（D-002・物理的ミス候補）"
       - name: fold_a_split
-        description: "Fold A の分割ラベル（train/test）"
+        description: "Fold A分割ラベル（D-009。訓練2021-2024=train / テスト2025=test）"
         tests:
           - accepted_values:
               values: ['train', 'test']
       - name: fold_b_split
-        description: "Fold B の分割ラベル（train/test/exclude）"
+        description: "Fold B分割ラベル（D-009。訓練2021-2023=train / テスト2024=test / 2025=exclude）"
         tests:
           - accepted_values:
               values: ['train', 'test', 'exclude']
+      - name: seismic_old_flag
+        description: "旧耐震基準フラグ（1981年以前竣工=1。スコアで減点対応）"
+      - name: scope_flag
+        description: "分析スコープ内=TRUE / 対象外=FALSE（D-003・D-011）"
+        tests:
+          - not_null
+      - name: excluded_reason
+        description: "スコープ除外理由（area/walk/age/price_out_of_scope。対象内はNULL）"
 
   - name: stg_station_master
     description: "駅マスタ（N02-2025）のstagingモデル。D-006の3段階正規化済み。"
     columns:
+      - name: line_name
+        description: "路線名"
+      - name: company_name
+        description: "運営会社名"
+      - name: station_name_raw
+        description: "駅名（元データ・未正規化）"
+      - name: lon
+        description: "駅代表点の経度"
+      - name: lat
+        description: "駅代表点の緯度"
       - name: station_name
-        description: "正規化後の駅名（intermediate層での結合キー）"
+        description: "正規化後の駅名（D-006・intermediate層での結合キー）"
         tests:
           - not_null
 
   - name: stg_land_price
     description: "公示価格（L01-2025）のstagingモデル。大阪市・型変換済み。"
     columns:
+      - name: point_id
+        description: "地価公示の地点ID"
+      - name: city_name
+        description: "市区町村名"
       - name: land_price_per_sqm
-        description: "公示価格（円/m²）"
+        description: "公示価格（円/m²。L01_008）"
+      - name: yoy_change_pct
+        description: "対前年変動率（%。L01_009）"
+      - name: lon
+        description: "地点の経度"
+      - name: lat
+        description: "地点の緯度"
