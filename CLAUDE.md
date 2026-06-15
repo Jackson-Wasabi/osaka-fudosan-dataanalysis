@@ -23,6 +23,7 @@
 - intermediate: 結合・駅特徴量・地価特徴量を作る。
 - marts: Tableau / BQML が読む完成テーブル。
 - mart は「誰が見ても意味がわかる列名」にする。
+- **view / table を作成・変更するたびに、schema.yml で全カラムに日本語の description を必ず付ける**（一部だけでなく全列）。persist_docs により BigQuery の列説明にも反映する。description 未記入のカラムを残さない。
 
 ## モデル/スコア設計（v9 の核心ルール）
 

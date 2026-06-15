@@ -4,55 +4,116 @@ models:
   - name: mart_condo_price
     description: "物件単位の分析完成テーブル（Tableau/BQML用）。両Fold保持・予測特徴量は補完済みを正規名で公開・スコア用項目は分離。新規出現駅はmodel_eligible=FALSEで除外（D-017）。"
     columns:
+      # --- キー / 属性 ---
+      - name: trade_year
+        description: "取引年（例: 2023）"
+      - name: trade_quarter
+        description: "取引四半期（1〜4）"
       - name: fold
-        description: "分割識別（A=訓練2021-2024/テスト2025・本番、B=訓練2021-2023/テスト2024・検証）"
+        description: "分割識別。A=訓練2021-2024/テスト2025（本番）、B=訓練2021-2023/テスト2024（検証）。物件は両Foldに各1行ずつ出る"
         tests:
           - not_null
           - accepted_values:
               values: ['A', 'B']
       - name: split
-        description: "train / test"
+        description: "学習区分。train=訓練期間 / test=テスト期間"
         tests:
           - not_null
           - accepted_values:
               values: ['train', 'test']
       - name: ward
         description: "区（大阪市○○区）"
+      - name: district
+        description: "地区名（大字・丁目）"
       - name: station_name
-        description: "正規化後の駅名"
+        description: "最寄り駅名（正規化後）"
         tests:
           - not_null
+      - name: line_name
+        description: "最寄り駅の代表路線名"
+      - name: station_lat
+        description: "最寄り駅の緯度（大阪府周辺で集約した代表点）"
+      - name: station_lon
+        description: "最寄り駅の経度（同上）"
+
+      # --- 目的変数 ---
+      - name: trade_price
+        description: "成約価格（円・総額）"
       - name: price_per_sqm
-        description: "実㎡単価（円/m²）"
+        description: "実㎡単価（成約価格 ÷ 専有面積、円/m²）"
         tests:
           - not_null
       - name: log_price_per_sqm
-        description: "log㎡単価（BQMLの目的変数）"
+        description: "㎡単価の自然対数。BQMLの目的変数（価格の歪みを抑えるためログ変換）"
         tests:
           - not_null
+
+      # --- 予測モデル用の特徴量（補完済みの値を正規名で公開）---
       - name: area_sqm
         description: "専有面積（m²）。予測特徴量"
         tests:
           - not_null
       - name: building_age_years
-        description: "築年数（補完済）。予測特徴量"
+        description: "築年数（成約年−建築年。欠損は当該Fold訓練の駅→区→全体中央値で補完済み）。予測特徴量"
         tests:
           - not_null
       - name: walk_minutes
-        description: "徒歩分（補完済）。予測特徴量"
+        description: "最寄り駅までの徒歩分（欠損は当該Fold訓練の駅→区中央値で補完済み）。予測特徴量"
         tests:
           - not_null
+      - name: renovation_done_flag
+        description: "改装済みフラグ（改装済み=1）。予測特徴量。※耐震補強済みは意味しない"
       - name: seismic_new
-        description: "新耐震フラグ。予測特徴量"
+        description: "新耐震フラグ（補完後築年で推定建築年>=1982なら1）。予測特徴量"
         tests:
           - not_null
       - name: station_median_price_per_sqm
-        description: "駅中央値㎡単価（当該Fold訓練由来）。予測特徴量。新規出現駅はNULL（model_eligible=FALSE）"
+        description: "駅の中央値㎡単価（当該Fold訓練期間のみから算出・リーク防止）。予測特徴量。新規出現駅はNULL（model_eligible=FALSE）"
+
+      # --- スコア用（予測モデルには入れない・v9核心）---
       - name: nearest_land_price
-        description: "最寄り公示価格（円/m²）。スコア用（予測に入れない）"
+        description: "最寄り公示地点の地価（円/m²）。地価・エリア補足スコア用"
+      - name: land_price_change_rate
+        description: "最寄り公示地点の対前年変動率（%）。地価変化スコア用"
+      - name: land_price_distance_m
+        description: "駅から最寄り公示地点までの距離（m）。地価の距離補正用"
+      - name: station_transaction_count
+        description: "駅の取引件数（当該Fold訓練期間）。市場信頼性スコア・サンプル不足リスク用"
+      - name: station_price_iqr
+        description: "駅内㎡単価のIQR（四分位範囲）。市場信頼性スコア（価格の安定性）用"
+      - name: renovation_unknown_flag
+        description: "改装情報が不明（空欄）フラグ。データ品質スコア・リスク減点用（予測には入れない）"
+      - name: station_joined
+        description: "駅マスタと結合できたか（TRUE=結合成功）。データ品質スコア用"
+      - name: seismic_old_flag
+        description: "旧耐震フラグ（推定建築年<1982なら1。seismic_newと相補）。リスク減点用。推定由来かはis_imputed_building_ageで区別"
+
+      # --- データ品質フラグ ---
+      - name: is_imputed_building_age
+        description: "築年数を補完したか（TRUE=補完）。データ品質スコア・リスク減点用"
+      - name: is_imputed_walk_minutes
+        description: "徒歩分を補完したか（TRUE=補完）。データ品質スコア・リスク減点用"
+      - name: is_imputed_land_price
+        description: "公示価格を補完したか（TRUE=補完。基本は実計算で非該当）"
+      - name: is_negative_age
+        description: "築年数がマイナス（竣工前売買/誤記）で0補正した行か。リスク材料"
+      - name: potential_dup_flag
+        description: "全21列が一致する完全重複の識別（D-005。集約せず保持）。データ品質用"
+      - name: outlier_pps_flag
+        description: "㎡単価5万円/m²未満フラグ（物理的ミス候補・D-002）"
+
+      # --- D-017: 新規出現駅の識別と適格フラグ ---
+      - name: station_history_missing
+        description: "新規出現駅で駅相場（駅中央値）が無い行（D-017）。model_eligibleの否定"
       - name: model_eligible
         description: "モデル学習・予測・候補ランキングの対象か（駅相場ありの行=TRUE・D-017）"
         tests:
           - not_null
-      - name: station_history_missing
-        description: "新規出現駅で駅相場が無い行（D-017）。model_eligibleの否定"
+
+      # --- 参考（元データ）---
+      - name: layout
+        description: "間取り（元データ。例: ２ＬＤＫ）"
+      - name: renovation
+        description: "改装状況（元データ。空欄=不明、改装済み）"
+      - name: built_year
+        description: "建築年（元データ。例: 2013年。空欄あり）"
