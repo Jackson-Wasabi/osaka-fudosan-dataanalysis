@@ -1,5 +1,33 @@
 # 作業ログ (work_log)
 
+## 2026-06-15 — Step 8: intermediate 構築（駅特徴量・地価特徴量・物件結合）
+
+- 作成モデル（dbt/models/intermediate/・全 view）:
+  - `int_station_geo`: 駅名→代表座標・代表路線。大阪府bbox限定で同名駅の全国平均ズレを防ぐ共通テーブル（D-016）
+  - `int_station_market_features`（駅×Fold）: 取引件数・中央値㎡単価・IQR・平均徒歩・改装率を各Foldの訓練期間のみで算出（D-012=D-009の具体化）
+  - `int_station_land_price_features`（駅）: 最寄り公示価格・対前年変動率・距離を ST_DISTANCE 最近傍結合
+  - `int_transactions_with_station_features`（物件×Fold）: 上記を結合した mart/BQML 用の行レベルテーブル
+- 前提整備（staging補修）: マクロ `normalize_station_name` 新設、stg_transactions に正規化駅名 `station_name` 追加、stg_station_master をマクロ化（D-013）
+- **検出・修正したバグ**: ①scope_flag の NULL 誤判定（8,226→7,796 に是正・D-014）②stg_land_price の市フィルタ列違い（0件→574地点・D-015）③地価距離の同名駅平均ズレ（中央値328km→242m・D-016）。詳細は errors_and_fixes.md
+- 検証結果（Python BigQuery クライアント / scripts/verify_intermediate.py）:
+  - stg_transactions: 大阪市24,613行・scope_true **7,796**（D-011一致）・駅名空欄1.91%
+  - 駅結合率 **100%**（scope内）・geo NULL 0
+  - Fold A train5,725/test2,071=7,796、Fold B train4,142/test1,583
+  - 地価: 175駅・距離 min32m/中央値242m/最大5.5km/1000m超4駅・NULL0
+  - 新規出現駅でテスト期間の特徴量NULL 9件(0.4%)は既知の限界（D-017）
+- **dbt test: PASS=17 / FAIL=0 / ERROR=0**
+- 接続: gcloud ハングのため ADCコピー + GOOGLE_CLOUD_PROJECT 指定で実行（errors_and_fixes.md）
+- 次にやること: Step 9 mart（mart_condo_price / mart_opportunity_list）。D-017のテスト期間特徴量NULLの扱いを決める
+
+## 2026-06-12 — Step 7: dbt staging 構築（型変換・正規化・スコープ判定）
+
+- 作成モデル: stg_transactions（大阪市24,613行・型変換・D-002/007/008フラグ・scope_flag/excluded_reason）、stg_station_master（D-006正規化）、stg_land_price（公示価格）。BigQuery にview作成・コミット済み（ce88573, 9758c14）
+- 注: 当時 scope_flag のNULL扱いと stg_land_price の市フィルタにバグが残存（Step 8 検証で発見し D-014/D-015 で修正）
+
+## 2026-06-12 — Step 6: 分析条件の確定（D-011）
+
+- 10_eda_scope_preview.sql のファネルで件数を確認し、分析スコープを確定: **大阪市・面積20-60㎡・徒歩20分以内・築5-60年・価格500万円以上（上限なし）= 7,796件・駅別10件以上が134駅（生駅名ベース）**。判断根拠は decision_log D-011
+
 ## 2026-06-12 — Step 5 改訂: EDA を大阪市スコープで再実行（ユーザー指摘 D-010）
 
 - 指摘: 「分析対象は大阪市なのに府全体で外れ値を見ても閾値の意思決定に使えない」→ 正しいので大阪市版を正式版として全面再実行
