@@ -5,7 +5,7 @@
 --   Fold A: 2021-2024=train / 2025=test　　Fold B: 2021-2023=train / 2024=test（2025は対象外）
 -- D-018: 徒歩分・築年数の欠損を「その Fold の訓練期間の中央値」で補完（リーク防止）。
 --   補完中央値は PERCENTILE_CONT(IF(split='train', 値, NULL)) で訓練行のみから算出。
---   築年数: 駅→区→全体 / 徒歩分: 駅→区 / 公示価格: 実計算で基本欠損なし、無い時のみ区中央値。
+--   築年数: 駅→区→全体 / 徒歩分: 駅→区→全体 / 公示価格: 実計算で基本欠損なし、無い時のみ区中央値。
 
 WITH tx AS (
     SELECT * FROM {{ ref('stg_transactions') }}
@@ -69,11 +69,13 @@ medians AS (
             OVER (PARTITION BY fold, city_name)    AS age_med_ward,
         PERCENTILE_CONT(IF(split = 'train', building_age_years, NULL), 0.5)
             OVER (PARTITION BY fold)               AS age_med_all,
-        -- 徒歩分: 駅 → 区
+        -- 徒歩分: 駅 → 区 → 全体（築年数と段数を揃え、駅・区にデータが無い場合も NULL を防ぐ）
         PERCENTILE_CONT(IF(split = 'train', walk_minutes, NULL), 0.5)
             OVER (PARTITION BY fold, station_name) AS walk_med_station,
         PERCENTILE_CONT(IF(split = 'train', walk_minutes, NULL), 0.5)
             OVER (PARTITION BY fold, city_name)    AS walk_med_ward,
+        PERCENTILE_CONT(IF(split = 'train', walk_minutes, NULL), 0.5)
+            OVER (PARTITION BY fold)               AS walk_med_all,
         -- 公示価格: 区中央値（座標が無く実計算できない駅のフォールバック用）
         PERCENTILE_CONT(IF(split = 'train', nearest_land_price, NULL), 0.5)
             OVER (PARTITION BY fold, city_name)    AS land_med_ward
@@ -81,7 +83,7 @@ medians AS (
 )
 
 SELECT
-    * EXCEPT (age_med_station, age_med_ward, age_med_all, walk_med_station, walk_med_ward, land_med_ward),
+    * EXCEPT (age_med_station, age_med_ward, age_med_all, walk_med_station, walk_med_ward, walk_med_all, land_med_ward),
 
     -- 築年数の補完（D-018）
     (building_age_years IS NULL) AS is_imputed_building_age,
@@ -90,7 +92,7 @@ SELECT
 
     -- 徒歩分の補完（D-018）
     (walk_minutes IS NULL) AS is_imputed_walk_minutes,
-    COALESCE(walk_minutes, walk_med_station, walk_med_ward)
+    COALESCE(walk_minutes, walk_med_station, walk_med_ward, walk_med_all)
         AS imputed_walk_minutes,
 
     -- 公示価格の補完（基本は実計算で非NULL。無い時のみ区中央値）
