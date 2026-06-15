@@ -1,5 +1,22 @@
 # 作業ログ (work_log)
 
+## 2026-06-15 — Step 8: 欠損値の補完（Fold対応・リーク防止・列ごとに理由のある方法）
+
+- 方針（D-018/D-019）: 一律中央値でなく列ごとに最適な方法。補完中央値は当該Foldの訓練期間のみから算出（PERCENTILE_CONT(IF(split='train',...))）。
+  - 築年数: 駅→区→全体の中央値 + is_imputed_building_age（欠損は全て真の不明＝戦前0件を確認）
+  - 徒歩分: 駅→区の中央値 + is_imputed_walk_minutes（駅×面積帯は根拠薄で不採用）
+  - 公示価格: int_station_land_price_features の対象を全取引駅に拡大し実計算（4駅の欠損解消）。補完は座標無し時のみ（実績0）
+  - seismic_new を補完後築年数から再計算
+- stg_transactions: scope を「徒歩・築年の欠損は駅があれば対象に含め補完／駅名欠損は除外（station_missing）」に変更
+  - 不具合検出と修正: 当初 scope を欠損許容にしたら駅名空欄314行が混入し駅中央値・地価がNULLに → 駅名必須化で解消（D-019・errors_and_fixes）
+- 検証（scripts/verify_intermediate.py + アドホック）:
+  - scope_true=**7,912**（complete-case 7,796 + 補完対象116）・駅名空欄の混入0
+  - 駅結合率 **100%**・補完後の築年/徒歩NULL=0・地価補完0（全て実値）
+  - 補完値は範囲内（築5-58年・徒歩1-20分）・補完件数 築56/徒歩60
+  - 駅中央値NULL（新規出現駅）Fold A test9/Fold B test8（D-017・要Step9対応）
+- **dbt run PASS=7 / dbt test PASS=21**（補完列のnot_null 4件追加）
+- 次: Step 9 mart。D-017（テスト期間の駅中央値NULL）の扱いを決める
+
 ## 2026-06-15 — Step 8: intermediate 構築（駅特徴量・地価特徴量・物件結合）
 
 - 作成モデル（dbt/models/intermediate/・全 view）:
