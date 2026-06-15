@@ -1,5 +1,13 @@
 # 作業ログ (work_log)
 
+## 2026-06-15 — 整合性監査と耐震フラグの矛盾修正
+
+- 目的（割安候補抽出＋スコアリング）に対しデータ補正が一貫しているか監査。最終テーブル46列を確認し、予測特徴量とスコア用項目の分離・リーク防止・層構造・限界明示が一貫していることを確認。
+- 検出した唯一の論理矛盾: 耐震フラグの二重定義（補完で旧耐震化した9行が seismic_new=0 かつ seismic_old_flag=0）。
+- 修正（D-020）: seismic_old_flag を staging から削除し、intermediate で seismic_new と相補的に補完後築年から算出。検証で矛盾0行（seismic_new+seismic_old_flag=1）、補完由来の旧耐震18行は is_imputed_building_age で区別可能。dbt run PASS=7 / dbt test PASS=21。
+- 軽微: D-011 本文に実装後の数値（scope7,912/complete-case7,796/126駅）の注記を追加。
+- 残課題（Step 9へ）: D-017 新規出現駅の駅中央値NULL（A:9/B:8）の扱い。モデルは imputed_* と seismic_new/seismic_old_flag を使う。
+
 ## 2026-06-15 — Step 8: 欠損値の補完（Fold対応・リーク防止・列ごとに理由のある方法）
 
 - 方針（D-018/D-019）: 一律中央値でなく列ごとに最適な方法。補完中央値は当該Foldの訓練期間のみから算出（PERCENTILE_CONT(IF(split='train',...))）。

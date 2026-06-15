@@ -100,3 +100,5 @@ models:
         description: "公示価格を補完したか（TRUE=補完）。データ品質スコアで使用。"
       - name: seismic_new
         description: "新耐震フラグ（補完後の築年数から: 取引年−築年数>=1982で1）。予測特徴量。"
+      - name: seismic_old_flag
+        description: "旧耐震フラグ（補完後築年で推定建築年<1982なら1。seismic_newと相補で矛盾なし。推定由来かはis_imputed_building_ageで区別・D-020）。リスク減点で使用。"

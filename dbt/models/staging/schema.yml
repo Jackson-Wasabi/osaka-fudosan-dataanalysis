@@ -71,8 +71,6 @@ models:
         tests:
           - accepted_values:
               values: ['train', 'test', 'exclude']
-      - name: seismic_old_flag
-        description: "旧耐震基準フラグ（1981年以前竣工=1。スコアで減点対応）"
       - name: scope_flag
         description: "分析スコープ内=TRUE / 対象外=FALSE（D-003・D-011）"
         tests:

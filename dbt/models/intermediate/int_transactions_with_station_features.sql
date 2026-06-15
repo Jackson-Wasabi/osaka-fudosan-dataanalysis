@@ -98,10 +98,16 @@ SELECT
     COALESCE(nearest_land_price, land_med_ward)
         AS imputed_nearest_land_price,
 
-    -- 新耐震（補完後の築年数から再計算: 取引年 - 築年数 >= 1982）
+    -- 耐震区分（補完後の築年数から算出。new と old は相補的で「どちらでもない」状態は生じない・D-020）
+    -- 取引年 - 補完後築年数 = 推定建築年。>=1982 を新耐震、<1982 を旧耐震とする。
     CASE
         WHEN (trade_year - COALESCE(building_age_years, age_med_station, age_med_ward, age_med_all)) >= 1982
         THEN 1 ELSE 0
-    END AS seismic_new
+    END AS seismic_new,
+    CASE
+        WHEN (trade_year - COALESCE(building_age_years, age_med_station, age_med_ward, age_med_all)) < 1982
+        THEN 1 ELSE 0
+    END AS seismic_old_flag
+    -- 旧耐震判定が補完(推定)由来かは is_imputed_building_age で区別できる（リスク評価で過信を避ける）
 
 FROM medians

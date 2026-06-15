@@ -73,13 +73,10 @@ flagged AS (
             WHEN SAFE_CAST(SUBSTR(trade_period, 1, 4) AS INT64) <= 2023 THEN 'train'
             WHEN SAFE_CAST(SUBSTR(trade_period, 1, 4) AS INT64) = 2024  THEN 'test'
             WHEN SAFE_CAST(SUBSTR(trade_period, 1, 4) AS INT64) = 2025  THEN 'exclude'
-        END AS fold_b_split,
+        END AS fold_b_split
 
-        -- 旧耐震基準フラグ（1981年以前竣工 = 築45年以上相当）
-        CASE
-            WHEN SAFE_CAST(REGEXP_EXTRACT(built_year, r'^([0-9]{4})年$') AS INT64) <= 1981
-            THEN 1 ELSE 0
-        END AS seismic_old_flag
+        -- 注: 旧耐震/新耐震フラグは built_year 欠損行を補完した後でないと一貫しないため、
+        -- ここ（補完前のstaging）では作らず、intermediate で seismic_new とともに算出する（D-020）。
 
     FROM casted
 ),
