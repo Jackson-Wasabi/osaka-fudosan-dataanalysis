@@ -78,3 +78,25 @@ models:
         description: "駅中央値㎡単価（当該Fold訓練由来）。予測モデル特徴量。"
       - name: price_per_sqm
         description: "実㎡単価（円/m²）"
+      - name: imputed_building_age
+        description: "補完後の築年数（D-018。欠損は当該Fold訓練の駅→区→全体中央値で補完）。予測特徴量。"
+        tests:
+          - not_null
+      - name: is_imputed_building_age
+        description: "築年数を補完したか（TRUE=補完）。データ品質スコア・リスク減点で使用。"
+        tests:
+          - not_null
+      - name: imputed_walk_minutes
+        description: "補完後の徒歩分（D-018。欠損は当該Fold訓練の駅→区中央値で補完）。予測特徴量。"
+        tests:
+          - not_null
+      - name: is_imputed_walk_minutes
+        description: "徒歩分を補完したか（TRUE=補完）。データ品質スコア・リスク減点で使用。"
+        tests:
+          - not_null
+      - name: imputed_nearest_land_price
+        description: "補完後の最寄り公示価格（基本は実計算で非NULL。無い時のみ区中央値）。地価補足スコア用。"
+      - name: is_imputed_land_price
+        description: "公示価格を補完したか（TRUE=補完）。データ品質スコアで使用。"
+      - name: seismic_new
+        description: "新耐震フラグ（補完後の築年数から: 取引年−築年数>=1982で1）。予測特徴量。"

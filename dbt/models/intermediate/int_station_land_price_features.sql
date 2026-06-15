@@ -6,9 +6,11 @@
 -- 注意: 地価特徴量は予測モデルに入れず、地価・エリア補足スコアで使う（CLAUDE.md / PART 14-3）。
 
 WITH analyzed_stations AS (
-    -- int_station_market_features に出る駅 = 大阪市スコープ内に取引がある駅
+    -- スコープ内の取引に出る全駅（train+test。地価は単年スナップショットの地理データで
+    -- 時点リークがないため、テスト期間のみ出現する駅も実際の最寄り地価を計算してよい）
     SELECT DISTINCT station_name
-    FROM {{ ref('int_station_market_features') }}
+    FROM {{ ref('stg_transactions') }}
+    WHERE scope_flag = TRUE AND station_name IS NOT NULL AND station_name != ''
 ),
 
 stations AS (
