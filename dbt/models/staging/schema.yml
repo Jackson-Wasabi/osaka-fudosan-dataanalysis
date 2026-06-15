@@ -19,6 +19,8 @@ models:
         description: "地区名（大字・丁目）"
       - name: station_name_raw
         description: "最寄り駅名（元データ・未正規化）"
+      - name: station_name
+        description: "正規化後の駅名（D-006。intermediate層での駅結合キー）"
       - name: walk_minutes
         description: "最寄り駅からの徒歩分数"
       - name: price

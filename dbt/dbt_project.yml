@@ -4,6 +4,10 @@ config-version: 2
 
 profile: osaka_fudosan_dataanalysis
 
+# 匿名使用統計の送信を無効化（送信先コレクタへの接続がこの環境でハングするため）
+flags:
+  send_anonymous_usage_stats: false
+
 model-paths: ["models"]
 seed-paths: ["seeds"]
 test-paths: ["tests"]

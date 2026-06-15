@@ -89,34 +89,45 @@ scoped AS (
         *,
 
         -- D-003 & D-011: スコープ判定（削除せず FALSE フラグで管理）
-        CASE
-            WHEN area_sqm > 100
-                THEN FALSE
-            WHEN NOT (
-                area_sqm BETWEEN 20 AND 60
-                AND walk_minutes <= 20
-                AND building_age_years BETWEEN 5 AND 60
-                AND price >= 5000000
-            )
-                THEN FALSE
-            ELSE TRUE
-        END AS scope_flag,
+        -- NULLセーフ: 条件にNULLが含まれると BETWEEN/比較 が NULL になるため
+        -- COALESCE で NULL→FALSE（=対象外）に確定させる。D-002の㎡単価下限も含める。
+        COALESCE(
+            area_sqm BETWEEN 20 AND 60
+            AND walk_minutes <= 20
+            AND building_age_years BETWEEN 5 AND 60
+            AND price >= 5000000
+            AND price_per_sqm >= 50000,
+            FALSE
+        ) AS scope_flag,
 
+        -- 除外理由（最初に該当する1つ。NULL列も明示的に該当させる）
         CASE
-            WHEN area_sqm > 100
-                THEN 'area_out_of_scope'
-            WHEN NOT (area_sqm BETWEEN 20 AND 60)
+            WHEN area_sqm IS NULL OR area_sqm NOT BETWEEN 20 AND 60
                 THEN 'area_out_of_scope'
             WHEN walk_minutes IS NULL OR walk_minutes > 20
                 THEN 'walk_out_of_scope'
-            WHEN NOT (building_age_years BETWEEN 5 AND 60)
+            WHEN building_age_years IS NULL OR building_age_years NOT BETWEEN 5 AND 60
                 THEN 'age_out_of_scope'
-            WHEN price < 5000000
+            WHEN price IS NULL OR price < 5000000
                 THEN 'price_out_of_scope'
+            WHEN price_per_sqm IS NULL OR price_per_sqm < 50000
+                THEN 'pps_too_low'
             ELSE NULL
         END AS excluded_reason
 
     FROM flagged
+),
+
+named AS (
+    -- D-006: 取引側の駅名も staging で正規化し、駅結合キー station_name を作る
+    -- （stg_station_master と同一の normalize_station_name マクロ + mapping）
+    SELECT
+        s.*,
+        COALESCE(m.canonical_name, {{ normalize_station_name('s.station_name_raw') }})
+            AS station_name
+    FROM scoped s
+    LEFT JOIN {{ ref('station_name_mapping') }} m
+        ON {{ normalize_station_name('s.station_name_raw') }} = m.raw_name
 )
 
-SELECT * FROM scoped
+SELECT * FROM named
