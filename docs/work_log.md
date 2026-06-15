@@ -1,5 +1,15 @@
 # 作業ログ (work_log)
 
+## 2026-06-15 — Step 10 フェーズ1: BQMLモデル作成（branch: feature/step10-model）
+
+- sql/bqml/01_create_models.sql で7モデル作成（Baselineはevaluate側でSQL計算のため除く）。osaka_real_estate データセット。
+  - 線形: model_a/b/c/d、model_f_time(C+時点index=trade_year-2021)、model_c_foldb（Fold B・安定性）。l2_reg=0.01・NO_SPLIT・log_price_per_sqm。
+  - 木: model_e_tree（BOOSTED_TREE・max_iter=30）。学習が長く(約8分超)、Pythonクライアントのタイムアウト後もBQ側ジョブは継続して完了。
+- 学習損失（logスケール・訓練・方向性のみ）: A0.0762 / B0.0758 / C0.0545 / D0.0535 / F0.0504 / C_foldB0.0488 / E_tree0.574(別尺度)。
+  - 早期所見: 駅中央値(C)で大改善・公示価格(D)はわずか(v9支持)・時点項(F)で改善(値上がり整合)。**公平な比較はフェーズ2**。
+- 注意点: 木モデルの損失は線形と非可比でフェーズ2で要検証。出力バッファ対策に python -u を使用。
+- 実行: Python BQクライアント（gcloud回避策）。次はフェーズ2（評価・比較）。
+
 ## 2026-06-15 — Step 10 フェーズ0: 価格モデル前の診断（読み取り専用）
 
 - sql/bqml/00_pre_checks.sql を作成し13種の診断を実行（Python BQクライアント・SELECTのみ・BQ書き込みなし）。詳細結果は docs/step10_model_plan.md 4.5節。
