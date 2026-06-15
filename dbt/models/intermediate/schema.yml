@@ -1,0 +1,80 @@
+version: 2
+
+models:
+  - name: int_station_geo
+    description: "駅名ごとの代表座標・代表路線。同名駅の全国平均ズレを防ぐため大阪府周辺に限定して集約。地価結合と物件結合で共用。"
+    columns:
+      - name: station_name
+        description: "正規化後の駅名（結合キー）"
+        tests:
+          - not_null
+          - unique
+      - name: line_name
+        description: "代表路線名"
+      - name: station_lon
+        description: "駅代表点の経度（大阪府周辺の同名駅のみ平均）"
+      - name: station_lat
+        description: "駅代表点の緯度（大阪府周辺の同名駅のみ平均）"
+
+  - name: int_station_market_features
+    description: "駅別の市場特徴量（駅×Fold）。D-009リーク対策で各Foldの訓練期間のみから中央値・IQRを算出。"
+    columns:
+      - name: station_name
+        description: "正規化後の駅名（結合キー）"
+        tests:
+          - not_null
+      - name: fold
+        description: "分割識別（A=訓練2021-2024 / B=訓練2021-2023）"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['A', 'B']
+      - name: station_transaction_count
+        description: "駅別取引件数（訓練期間内・scope内）。市場信頼性スコアで使用。"
+      - name: station_median_price_per_sqm
+        description: "駅中央値㎡単価（円/m²）。予測モデルの特徴量。"
+      - name: station_price_iqr
+        description: "駅内㎡単価IQR（P75−P25）。市場信頼性スコアで使用。"
+      - name: station_avg_walk_minutes
+        description: "駅周辺物件の平均徒歩分"
+      - name: station_renovation_rate
+        description: "改装済み比率（0〜1）"
+
+  - name: int_station_land_price_features
+    description: "駅別の地価特徴量。各駅に最も近い公示地点をST_DISTANCEで最近傍結合。地価・エリア補足スコア用（予測には入れない）。"
+    columns:
+      - name: station_name
+        description: "正規化後の駅名（結合キー）"
+        tests:
+          - not_null
+          - unique
+      - name: nearest_land_price
+        description: "最寄り公示価格（円/m²。L01_008）"
+      - name: land_price_change_rate
+        description: "対前年変動率（%。L01_009）"
+      - name: land_price_distance_m
+        description: "駅代表点から最寄り公示地点までの距離（m）"
+
+  - name: int_transactions_with_station_features
+    description: "物件×駅特徴量×地価特徴量の行レベルテーブル（物件×Fold）。mart/BQMLの元。D-009でFold展開。"
+    columns:
+      - name: station_name
+        description: "正規化後の駅名"
+      - name: fold
+        description: "分割識別（A / B）"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['A', 'B']
+      - name: split
+        description: "train / test（各Foldの訓練・テスト期間）"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['train', 'test']
+      - name: station_joined
+        description: "駅マスタ結合成否（TRUE=結合成功）。データ品質スコア・リスク減点で使用。"
+      - name: station_median_price_per_sqm
+        description: "駅中央値㎡単価（当該Fold訓練由来）。予測モデル特徴量。"
+      - name: price_per_sqm
+        description: "実㎡単価（円/m²）"
