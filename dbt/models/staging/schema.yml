@@ -61,6 +61,8 @@ models:
         description: "改装済みフラグ（renovation='改装済み'=1）"
       - name: outlier_pps_flag
         description: "㎡単価5万円/m²未満フラグ（D-002・物理的ミス候補）"
+      - name: potential_dup_flag
+        description: "全21列が一致する完全重複の識別（D-005。集約せず保持・データ品質用）"
       - name: fold_a_split
         description: "Fold A分割ラベル（D-009。訓練2021-2024=train / テスト2025=test）"
         tests:

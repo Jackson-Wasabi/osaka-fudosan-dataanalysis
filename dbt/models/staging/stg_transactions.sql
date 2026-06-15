@@ -3,8 +3,9 @@
 -- 出力: 大阪市スコープ（24,613行）に絞り、D-002〜D-011の処理を適用
 
 WITH raw AS (
-    SELECT * FROM {{ source('osaka_real_estate', 'raw_transactions') }}
-    WHERE STARTS_WITH(city_name, '大阪市')
+    SELECT t.*, TO_JSON_STRING(t) AS _row_json   -- 全21列一致の完全重複判定用（D-005）
+    FROM {{ source('osaka_real_estate', 'raw_transactions') }} AS t
+    WHERE STARTS_WITH(t.city_name, '大阪市')
 ),
 
 casted AS (
@@ -38,7 +39,8 @@ casted AS (
         trade_period,
         SAFE_CAST(SUBSTR(trade_period, 1, 4) AS INT64)              AS trade_year,
         SAFE_CAST(REGEXP_EXTRACT(trade_period, r'第([1-4])') AS INT64) AS trade_quarter,
-        trade_circumstances
+        trade_circumstances,
+        _row_json
     FROM raw
 ),
 
@@ -73,7 +75,10 @@ flagged AS (
             WHEN SAFE_CAST(SUBSTR(trade_period, 1, 4) AS INT64) <= 2023 THEN 'train'
             WHEN SAFE_CAST(SUBSTR(trade_period, 1, 4) AS INT64) = 2024  THEN 'test'
             WHEN SAFE_CAST(SUBSTR(trade_period, 1, 4) AS INT64) = 2025  THEN 'exclude'
-        END AS fold_b_split
+        END AS fold_b_split,
+
+        -- D-005: 全21列が一致する完全重複を識別（集約せず保持しフラグのみ）
+        COUNT(*) OVER (PARTITION BY _row_json) > 1 AS potential_dup_flag
 
         -- 注: 旧耐震/新耐震フラグは built_year 欠損行を補完した後でないと一貫しないため、
         -- ここ（補完前のstaging）では作らず、intermediate で seismic_new とともに算出する（D-020）。
@@ -134,4 +139,4 @@ named AS (
         ON {{ normalize_station_name('s.station_name_raw') }} = m.raw_name
 )
 
-SELECT * FROM named
+SELECT * EXCEPT (_row_json) FROM named

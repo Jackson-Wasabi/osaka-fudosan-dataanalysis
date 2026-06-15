@@ -1,0 +1,58 @@
+version: 2
+
+models:
+  - name: mart_condo_price
+    description: "物件単位の分析完成テーブル（Tableau/BQML用）。両Fold保持・予測特徴量は補完済みを正規名で公開・スコア用項目は分離。新規出現駅はmodel_eligible=FALSEで除外（D-017）。"
+    columns:
+      - name: fold
+        description: "分割識別（A=訓練2021-2024/テスト2025・本番、B=訓練2021-2023/テスト2024・検証）"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['A', 'B']
+      - name: split
+        description: "train / test"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['train', 'test']
+      - name: ward
+        description: "区（大阪市○○区）"
+      - name: station_name
+        description: "正規化後の駅名"
+        tests:
+          - not_null
+      - name: price_per_sqm
+        description: "実㎡単価（円/m²）"
+        tests:
+          - not_null
+      - name: log_price_per_sqm
+        description: "log㎡単価（BQMLの目的変数）"
+        tests:
+          - not_null
+      - name: area_sqm
+        description: "専有面積（m²）。予測特徴量"
+        tests:
+          - not_null
+      - name: building_age_years
+        description: "築年数（補完済）。予測特徴量"
+        tests:
+          - not_null
+      - name: walk_minutes
+        description: "徒歩分（補完済）。予測特徴量"
+        tests:
+          - not_null
+      - name: seismic_new
+        description: "新耐震フラグ。予測特徴量"
+        tests:
+          - not_null
+      - name: station_median_price_per_sqm
+        description: "駅中央値㎡単価（当該Fold訓練由来）。予測特徴量。新規出現駅はNULL（model_eligible=FALSE）"
+      - name: nearest_land_price
+        description: "最寄り公示価格（円/m²）。スコア用（予測に入れない）"
+      - name: model_eligible
+        description: "モデル学習・予測・候補ランキングの対象か（駅相場ありの行=TRUE・D-017）"
+        tests:
+          - not_null
+      - name: station_history_missing
+        description: "新規出現駅で駅相場が無い行（D-017）。model_eligibleの否定"

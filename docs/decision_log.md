@@ -1,5 +1,12 @@
 # 判断理由ログ (decision_log)
 
+## 2026-06-15 — Step 9 mart の設計判断
+
+- **D-021（採用）** mart_condo_price は両Foldを保持し fold/split 列で区別（Tableauは fold='A' でフィルタ）。理由: PART17のFold横断モデル比較・配点感度分析を mart 上で完結させ、本番(A)と検証(B)を1テーブルで扱う。物件が2回出るためTableau側のフィルタ前提を docs/README に明記する。
+- **D-017 確定（mart反映）** 新規出現駅（駅中央値が訓練に無くNULL）は mart に残しつつ `station_history_missing=TRUE`・`model_eligible=FALSE` で識別し、モデル学習・予測・候補ランキングから除外。理由: 駅相場が無い物件は手法（駅相対価格）の前提を満たさず推定不能。区中央値フォールバックは「駅相場」の意味を薄めるため不採用。件数 Fold A test 9・Fold B test 8（計17・約0.2%）。
+- **D-005 実装（実装漏れの補完）** potential_dup_flag を stg_transactions に実装（TO_JSON_STRINGで全21列一致を判定・COUNT OVER>1）。決定済みだが未実装だったものを Step 9 で補完。Fold A で182件。
+- mart 設計: 予測特徴量は補完済みの値を正規名（building_age_years/walk_minutes）で公開し生のNULL列は出さない（Step10で誤って生列を使う事故を構造的に防止）。目的変数 log_price_per_sqm を追加。
+
 ## 2026-06-15 — 耐震フラグの一貫性修正（整合性監査の結果）
 
 - **D-020（採用）** 旧耐震/新耐震フラグの定義を「補完後築年ベース」に一本化。

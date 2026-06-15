@@ -1,5 +1,18 @@
 # 作業ログ (work_log)
 
+## 2026-06-15 — Step 9: mart_condo_price 構築（分析完成テーブル）
+
+- mart_condo_price（materialized: table・13,718行=両Fold）作成。intermediate を整形し正規の列名で公開。
+  - 予測特徴量は補完済みの値を正規名（building_age_years/walk_minutes）で公開、スコア用項目（公示価格・駅件数/IQR・renovation_unknown・seismic_old_flag）は分離（v9核心）
+  - 両Fold保持＋fold/split列（Tableauはfold='A'。PART17のFold横断比較対応）
+  - 目的変数 log_price_per_sqm を追加（BQML用）
+- staging小修正: stg_transactions に potential_dup_flag を追加（D-005の実装漏れを補完。Fold A 182件）
+- D-017反映: 新規出現駅（駅中央値NULL）は station_history_missing=TRUE / model_eligible=FALSE で識別し、モデル・予測・ランキングから除外（martには残す）。Fold A test 9件・Fold B test 8件
+- 検証: **model_eligible行 13,701件で予測特徴量NULL=0**・log_price_per_sqm NULL=0・Fold/split件数整合（A:5,806+2,106 / B:4,201+1,605）
+- 失敗と修正: mart で trade_price 列名誤り→ stg の列名 price に修正
+- dbt run PASS=8 / dbt test 実行
+- 次: Step 10 モデル（中央値ベースライン + BQML、PART17のBaseline〜Model D比較・Fold A本番/Fold B検証）
+
 ## 2026-06-15 — 整合性監査と耐震フラグの矛盾修正
 
 - 目的（割安候補抽出＋スコアリング）に対しデータ補正が一貫しているか監査。最終テーブル46列を確認し、予測特徴量とスコア用項目の分離・リーク防止・層構造・限界明示が一貫していることを確認。
