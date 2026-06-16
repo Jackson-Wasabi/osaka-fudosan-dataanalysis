@@ -29,8 +29,10 @@ WITH per_station AS (
         --        補完フラグ（築年・徒歩・地価の補完）のみで品質を測る。
         AVG(IF(is_imputed_building_age
                OR is_imputed_walk_minutes OR is_imputed_land_price, 1, 0)) AS quality_issue_share,
+        -- D-031: outlier_pps_flag は「㎡単価<5万」専用で価格下限500万(=60㎡で83,333/㎡)と冗長＝スコープ内で恒久0。
+        --         飾りなので除外。残りは旧耐震×改装・築年補正・重複（重複はD-005で残すが murky=軽い不確実性として減点）。
         AVG(IF((seismic_old_flag = 1 AND renovation_done_flag = 1)
-               OR is_negative_age = 1 OR potential_dup_flag OR outlier_pps_flag = 1, 1, 0)) AS risk_share,
+               OR is_negative_age = 1 OR potential_dup_flag, 1, 0)) AS risk_share,
 
         -- 参考
         APPROX_QUANTILES(actual_price_per_sqm, 2)[OFFSET(1)] AS actual_median_price_per_sqm
