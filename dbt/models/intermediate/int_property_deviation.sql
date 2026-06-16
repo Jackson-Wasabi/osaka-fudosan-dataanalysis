@@ -87,5 +87,14 @@ SELECT
     band_adjusted_deviation,
     station_median_adjusted_deviation,
     -- 最終: 駅相対乖離（負に大きいほど割安）
-    band_adjusted_deviation - station_median_adjusted_deviation AS station_relative_deviation
+    band_adjusted_deviation - station_median_adjusted_deviation AS station_relative_deviation,
+
+    -- 建物リスクの理由ラベル（PART 15-A・C案=減点でなく可視化）。改装列は「改装済み」or空欄のみ。
+    CASE
+        WHEN seismic_old_flag = 1 AND renovation_done_flag = 1 THEN '旧耐震・改装済（耐震補強は要確認）'
+        WHEN seismic_old_flag = 1 AND renovation_unknown_flag = 1 THEN '旧耐震・改装不明（リスク高）'
+        WHEN seismic_new = 1 AND renovation_unknown_flag = 1 THEN '新耐震・改装不明'
+        WHEN seismic_new = 1 AND renovation_done_flag = 1 THEN '新耐震・改装済（大きな建物リスクなし）'
+        ELSE 'その他'
+    END AS building_risk_label
 FROM station_adj

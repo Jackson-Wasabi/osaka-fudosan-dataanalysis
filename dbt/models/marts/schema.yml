@@ -147,11 +147,7 @@ models:
       - name: sc_value
         description: "割安度スコア（最大45）。under_levelが安い順のパーセンタイル×45。"
       - name: sc_reliability
-        description: "市場信頼性スコア（最大25）＝件数点sc_count + IQR点sc_iqr。"
-      - name: sc_count
-        description: "取引件数の点（最大15）。訓練期間の取引件数が多いほど高い（市場の厚み）。"
-      - name: sc_iqr
-        description: "IQR狭さの点（最大10）。㎡単価のばらつき（IQR/中央値）が小さいほど高い（相場が締まっている）。"
+        description: "市場信頼性スコア（最大25・バランス型）＝件数(0.6)+IQR狭さ(0.4)の加重。取引件数が多く相場が締まっているほど高い。"
       - name: sc_land
         description: "地価補足スコア（最大15）。駅平均の公示価格が高いほど高い（エリア基礎体力）。"
       - name: sc_quality
@@ -163,9 +159,23 @@ models:
         tests:
           - not_null
       - name: priority_rank
-        description: "priority_score 降順の順位（1位＝最優先調査エリア）。"
+        description: "priority_score（バランス型）降順の順位（1位＝最優先調査エリア）。"
         tests:
           - not_null
+      - name: score_discount
+        description: "PART17-3 割安重視型(60/15/10/15/-20)のスコア。割安候補を広く拾う配点。"
+      - name: rank_discount
+        description: "割安重視型での順位。"
+      - name: score_risk
+        description: "PART17-3 リスク重視型(35/30/15/20/-30)のスコア。安定候補を優先する配点。"
+      - name: rank_risk
+        description: "リスク重視型での順位。"
+      - name: stable_flag
+        description: "安定候補フラグ（PART17-3/17-4）。3配点中2回以上Top20ならTRUE。配点を変えても上位＝頑健な候補。"
+      - name: old_seismic_share
+        description: "C案/PART15-A：旧耐震(推定建築年<1982)物件の割合。減点でなく要確認理由として表示。"
+      - name: high_risk_share
+        description: "C案/PART15-A：旧耐震×改装不明（リスク高）物件の割合。現場が要確認理由を見るための列。"
       - name: iqr_ratio
         description: "透明性用：駅㎡単価のIQR÷中央値。小さいほど相場が安定。"
       - name: avg_land_price

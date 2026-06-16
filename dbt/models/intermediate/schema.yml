@@ -184,3 +184,7 @@ models:
         description: "最終: 駅相対乖離＝band_adjusted_deviation − station_median_adjusted_deviation。負に大きいほど割安。割安度スコアの基。"
         tests:
           - not_null
+      - name: building_risk_label
+        description: "建物リスクの理由ラベル（PART 15-A・C案=減点でなく可視化）。旧耐震×改装済/旧耐震×改装不明=リスク高/新耐震×改装不明/新耐震×改装済/その他。改装列は改装済みor空欄のみ。"
+        tests:
+          - not_null
