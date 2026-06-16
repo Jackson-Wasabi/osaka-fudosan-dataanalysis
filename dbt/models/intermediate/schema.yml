@@ -102,3 +102,85 @@ models:
         description: "新耐震フラグ（補完後の築年数から: 取引年−築年数>=1982で1）。予測特徴量。"
       - name: seismic_old_flag
         description: "旧耐震フラグ（補完後築年で推定建築年<1982なら1。seismic_newと相補で矛盾なし。推定由来かはis_imputed_building_ageで区別・D-020）。リスク減点で使用。"
+
+  - name: int_property_deviation
+    description: "物件ごとの駅相対乖離（粒度: 物件・2025年候補）。D-026の二段加法補正＝乖離率−市全体の面積帯中央値−駅内中央値。負に大きいほど割安。逆選択(D-024/D-025)のため額面で買い判断しない。"
+    columns:
+      - name: trade_quarter
+        description: "成約四半期（1〜4）。"
+      - name: ward
+        description: "大阪市の区名（例: 大阪市北区）。駅集約・表示用。"
+      - name: district
+        description: "地区名（大字・丁目）。表示用。"
+      - name: station_name
+        description: "正規化後の駅名（駅相対乖離・駅集約のキー）。"
+        tests:
+          - not_null
+      - name: line_name
+        description: "代表路線名。表示用。"
+      - name: station_lat
+        description: "駅代表点の緯度（Tableau地図用）。"
+      - name: station_lon
+        description: "駅代表点の経度（Tableau地図用）。"
+      - name: area_sqm
+        description: "専有面積（m²）。"
+      - name: area_band
+        description: "面積帯（1:〜30 / 2:30〜45 / 3:45〜60㎡）。市全体での帯補正のキー（D-026）。"
+        tests:
+          - not_null
+      - name: building_age_years
+        description: "補完後の築年数（年）。表示・参考用。"
+      - name: walk_minutes
+        description: "補完後の最寄り駅徒歩分。表示・参考用。"
+      - name: renovation_done_flag
+        description: "改装済みフラグ（1=改装済み）。旧耐震との組合せでリスク減点に使用。"
+      - name: seismic_new
+        description: "新耐震フラグ（推定建築年>=1982で1）。参考用。"
+      - name: seismic_old_flag
+        description: "旧耐震フラグ（推定建築年<1982で1）。リスク減点で使用。"
+      - name: station_median_price_per_sqm
+        description: "駅中央値㎡単価（円/m²・訓練期間由来）。参考・市場の水準把握用。"
+      - name: station_transaction_count
+        description: "駅別取引件数（訓練期間内）。市場信頼性スコア・最低件数しきい値（D-025）で使用。"
+      - name: station_price_iqr
+        description: "駅別㎡単価のIQR（円/m²）。市場信頼性スコアで使用。"
+      - name: nearest_land_price
+        description: "最寄り公示価格（円/m²）。地価補足スコアで使用（予測には入れない）。"
+      - name: land_price_change_rate
+        description: "公示価格の対前年変化率。地価補足スコアの参考。"
+      - name: land_price_distance_m
+        description: "最寄り公示地点までの距離（m）。地価の代表性の参考。"
+      - name: renovation_unknown_flag
+        description: "改装状態が不明（空欄）か（1=不明）。データ品質スコア・リスク減点で使用。"
+      - name: is_imputed_building_age
+        description: "築年数を補完したか（TRUE=補完）。データ品質スコアで使用。"
+      - name: is_imputed_walk_minutes
+        description: "徒歩分を補完したか（TRUE=補完）。データ品質スコアで使用。"
+      - name: is_imputed_land_price
+        description: "公示価格を補完したか（TRUE=補完）。データ品質スコアで使用。"
+      - name: is_negative_age
+        description: "築年数がマイナス（竣工前売買/誤記）を0補正した行か（D-008）。リスク減点で使用。"
+      - name: potential_dup_flag
+        description: "全列一致の重複候補か（D-005）。データ品質スコア・リスク減点で使用。"
+      - name: outlier_pps_flag
+        description: "㎡単価がIQRフェンス外れ値か（D-002）。リスク減点・要確認の材料。"
+      - name: actual_price_per_sqm
+        description: "実勢㎡単価（成約価格÷面積、円/m²）。"
+        tests:
+          - not_null
+      - name: predicted_price_per_sqm
+        description: "Model C 予測㎡単価（smearing補正済、円/m²）。"
+        tests:
+          - not_null
+      - name: raw_deviation
+        description: "乖離率＝実勢/予測−1（マイナス＝予測より安い）。補正前。"
+      - name: city_band_median_deviation
+        description: "①市全体での当該面積帯の乖離率中央値（帯差の補正項・D-026）。"
+      - name: band_adjusted_deviation
+        description: "面積帯補正後の乖離＝raw_deviation − city_band_median_deviation。"
+      - name: station_median_adjusted_deviation
+        description: "②帯補正後乖離の駅内中央値（立地差の補正項・D-026）。"
+      - name: station_relative_deviation
+        description: "最終: 駅相対乖離＝band_adjusted_deviation − station_median_adjusted_deviation。負に大きいほど割安。割安度スコアの基。"
+        tests:
+          - not_null
