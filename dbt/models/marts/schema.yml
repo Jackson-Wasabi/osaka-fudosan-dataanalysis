@@ -167,7 +167,7 @@ models:
       - name: rank_discount
         description: "割安重視型での順位。"
       - name: score_risk
-        description: "PART17-3 リスク重視型(35/30/15/20/-30)のスコア。安定候補を優先する配点。"
+        description: "PART17-3 リスク重視型(35/30/15/20/-30)＋旧耐震減点(-30×high_risk_share)のスコア(D-033)。安全候補優先。このモードのみ旧耐震を採点に反映。"
       - name: rank_risk
         description: "リスク重視型での順位。"
       - name: stable_flag

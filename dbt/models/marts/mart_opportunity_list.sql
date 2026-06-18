@@ -58,7 +58,9 @@ scored AS (
         -- 3配点のスコア（信頼性は件数:IQR=0.6:0.4で内分）
         GREATEST(0, LEAST(100, 45*pct_value + 25*(0.6*pct_count+0.4*pct_iqr) + 15*pct_land + 15*pct_quality - 20*risk_share)) AS score_balance,
         GREATEST(0, LEAST(100, 60*pct_value + 15*(0.6*pct_count+0.4*pct_iqr) + 10*pct_land + 15*pct_quality - 20*risk_share)) AS score_discount,
-        GREATEST(0, LEAST(100, 35*pct_value + 30*(0.6*pct_count+0.4*pct_iqr) + 15*pct_land + 20*pct_quality - 30*risk_share)) AS score_risk
+        -- D-033/A案: リスク重視モードのみ旧耐震(high_risk_share)も減点。安全候補探索という用途のため二重計上を承知で採用。
+        --   バランス/割安重視は旧耐震を減点しない（C案=D-030維持）。これで「リスク重視」が最大リスク(旧耐震)を反映する。
+        GREATEST(0, LEAST(100, 35*pct_value + 30*(0.6*pct_count+0.4*pct_iqr) + 15*pct_land + 20*pct_quality - 30*risk_share - 30*high_risk_share)) AS score_risk
     FROM pct
 ),
 
