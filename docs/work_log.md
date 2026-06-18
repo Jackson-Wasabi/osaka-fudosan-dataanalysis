@@ -1,5 +1,35 @@
 # 作業ログ (work_log)
 
+## 2026-06-18 — 画面4補強 区別バイアステーブル（model_bias_by_ward）＋interview_notes追記
+
+- 「Fがなぜ却下か」を視覚証明するため osaka_real_estate.model_bias_by_ward 作成（sql/bqml/06_bias_by_ward.sql・実測materialize）。区×モデル(C/F)×signed_bias、取引20件以上の20区。
+- 結果: F−C が全20区でほぼ+0.12〜0.18の一定＝Fは一律の値上がり補正を足すだけ。C時点で各区ズレが違う(中心-0.19〜周縁+0.20)ため、一律加算で中心は0に改善も周縁が+0.27〜0.39に膨張（住吉+0.20→+0.39/平野+0.15→+0.33）。Fは平均を直すが区ごとのバラつき(順位を歪める元)は直さない＝精度改善≠ランキング改善を数値で証明。
+- interview_notes 追記: 「駅×年トレンドで精緻化しない理由」(循環で割安シグナル消失・データ希薄・既に駅相対乖離で対処／精度↑が目的を壊す境界)。
+- 次: Tableauで区別バイアス比較グラフ(画面4補強)→採用理由ラベル→画面0サマリー→ダッシュボード→再公開。
+
+## 2026-06-18 — 画面4用 モデル評価テーブル作成（model_eval_metrics）
+
+- Tableau画面4(モデル評価)用に osaka_real_estate.model_eval_metrics を作成（sql/bqml/05_eval_metrics_table.sql）。
+- **当初ハードコード版を書きかけたがユーザー指摘で実測materialize版に修正**（再現性・監査性）。02_evaluate.sql ブロック1と同一ロジックを CREATE TABLE 化。ML.PREDICTの実測から算出。
+- 検証: 値がフェーズ2記録と完全一致（Baseline hit10 0.176/Model C 0.269・MAE12.1万・bias-0.093/Model F 0.329・MAE10.1万）。7モデル×指標(hit10/hit20/mdape/mae/rmse/signed_bias)+adopted/ord列。
+- 教訓: 評価指標も手打ちせず実モデルから焼く（predictions_model_cと同思想・dbt外の手動BQMLステップ）。
+- 残宿題: Tableauブック保存・完成時の再公開・実行順序README(Step14)・本変更のコミット。
+- 次: Tableauで画面4(評価棒グラフ)→画面0(サマリー+方法論)→ダッシュボード組み立て。
+
+## 2026-06-18 — Tableau検証中の指摘からスコア修正（D-033・A案）
+
+- ユーザーが「リスク重視にしても旧耐震86%の平野が上位＝矛盾」と指摘。リスク高率は固定値で配点と無関係だが、根本はC案で旧耐震をスコアに入れていなかったためリスク重視が最大リスクを無視していた。
+- A案採用(D-033): リスク重視モードのみ score_risk に -30×high_risk_share を追加。バランス/割安重視はC案維持。dbt run PASS。
+- 効果: 平野 リスク重視2位→33位(割安重視は1位維持)。リスク重視Top5は旧耐震0〜12%のクリーン駅。「最も安いが最も危険」が配点切替で物語化。
+- 要対応: TableauはBigQuery抽出のため、ユーザー側で抽出を更新して新スコアを反映する必要あり。
+
+## 2026-06-17 — Step 13: Tableau ダッシュボード設計（仕様書）
+
+- Tableau準備の健全性チェック合格: 緯度経度66駅NULL/ゼロ/府外=0、感度分析新列NULL0・スコア0-100内、building_risk_label「その他」=0(フラグ整合)、物件2097件のラベル/乖離/予測NULL0。データはクリーンで修正不要。
+- docs/tableau_design.md 作成（3画面：①駅マップ ②駅詳細drill ③候補比較表）。データソースA=mart_opportunity_list(66駅)/B=int_property_deviation(2097物件)をstation_nameでリレーション。配点パターンのパラメーター＋計算フィールドで3配点切替。設計原則=割安を単独で見せず high_risk_share/stable_flag を並置・「調査候補/現物確認前提」を全画面注記。
+- Tableau Desktop での組み立てはユーザー作業（GUI）。私はデータ準備＋仕様書を担当。
+- 次: ユーザーがTableau構築→tableau/screenshots/ に保存→Step 14（README/物語化・実行順序明記・GitHub公開）。
+
 ## 2026-06-16 — 手順書 PART 15/17 整合（D-032）
 
 - 監査でPART15/17の未反映を検出→整合。dbt run PASS=2 / test PASS=11。
