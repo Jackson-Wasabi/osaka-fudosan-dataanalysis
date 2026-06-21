@@ -1,5 +1,14 @@
 # 作業ログ (work_log)
 
+## 2026-06-20 — 設計デッキ統合（重複解消）＋①サマリーのファネル数値を実データ確認
+
+- ダッシュボード設計PDFの重複を解消。1枚物 summary_revised_fixed.pdf と ChatGPT版 osaka_real_estate_dashboard_revised.pdf でサマリーが重複していたため、SUMMARY→EVIDENCE→ACTION の3枚デッキに統合（scripts/make_storyboard.py）。①=改良サマリー、②=見どころ①②の実証（C vs F比較表＋区別バイアス＋逆選択）、③=見どころ③＝限界明示＋本命駅＋次の一手。空き家だった旧②③（各1行）を実質化。重複していた1枚物PDF/PNGは削除（make_summary_revised.pyで再生成可）。dashboard_mockups.pdf（実チャートのモック）は役割違いで併存。
+- ①サマリーTableau化に向け、ファネル数値を実データで確認（scripts/confirm_funnel.py・confirm_honmei.py／読み取り専用）。
+  - mart_condo_price(2025/fold A test): 取引2,106件・取引のあった駅155・相場比較可能(model_eligible)151駅・10件以上66駅。**サマリー表記2,097件は古く実データは2,106件**→デッキPDF修正。
+  - mart_opportunity_list: 66駅/stable20/本命10（本命=stable_flag AND high_risk_share<0.10）。priority_score上位5=堺筋本町80.8/玉造79.3/平野79.1(要確認・旧耐震×改装不明0.857)/大国町77.8/松屋町74.3。本命10駅=堺筋本町・玉造・大国町・松屋町・中之島・森ノ宮・谷町四丁目・桜ノ宮・伝法・淀屋橋。平野はbalance3位だがrank_risk33・high_risk0.857で★本命除外＝▲要確認（設計どおり）。
+- ①サマリーは Option①（martを別々の単一接続で繋ぎ動的算出）で確定。DS1=mart_opportunity_list（本命/要確認バー・66/10）、DS2=mart_condo_price（ファネル2,106/151）。計算フィールド: 判定区分・本命駅数・比較可能な駅数。
+- 次: Tableauで①サマリーを実装（KPI4タイル＋本命/要確認上位10バー＋見どころ/限界テキスト）。
+
 ## 2026-06-18 — 画面4補強 区別バイアステーブル（model_bias_by_ward）＋interview_notes追記
 
 - 「Fがなぜ却下か」を視覚証明するため osaka_real_estate.model_bias_by_ward 作成（sql/bqml/06_bias_by_ward.sql・実測materialize）。区×モデル(C/F)×signed_bias、取引20件以上の20区。
