@@ -49,3 +49,7 @@ scripts/make_summary_revised.py
 scripts/make_wireframe.py
 scripts/shot.py
 scripts/shot.ps1
+
+# 面接準備（会社名・就活戦略を含む。公開しない）
+docs/interview_notes.md
+docs/_interview_prep_GA.md
