@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ポートフォリオ完成・公開 手順書</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Yu Gothic","Meiryo","Hiragino Kaku Gothic ProN",sans-serif;
+    color: #1a1a1a; font-size: 10.5pt; line-height: 1.7; margin: 0;
+  }
+  h1 { font-size: 21pt; color: #14304a; border-bottom: 3px solid #14304a; padding-bottom: 8px; margin: 0 0 4px; }
+  h2 {
+    font-size: 14pt; color: #fff; background: #14304a; padding: 6px 12px;
+    margin: 26px 0 12px; border-radius: 4px; page-break-after: avoid;
+  }
+  h3 { font-size: 12pt; color: #14304a; border-left: 5px solid #2f7ab5; padding-left: 8px; margin: 18px 0 8px; page-break-after: avoid; }
+  h4 { font-size: 10.5pt; color: #2f7ab5; margin: 12px 0 4px; }
+  p { margin: 6px 0; }
+  ul, ol { margin: 6px 0 10px; padding-left: 22px; }
+  li { margin: 3px 0; }
+  code { font-family: "Consolas","Courier New",monospace; background: #eef2f6; padding: 1px 5px; border-radius: 3px; font-size: 9.5pt; }
+  pre {
+    background: #1e2a36; color: #e6edf3; padding: 10px 14px; border-radius: 5px;
+    font-family: "Consolas","Courier New",monospace; font-size: 9pt; line-height: 1.55;
+    overflow-x: auto; white-space: pre-wrap; word-break: break-all; page-break-inside: avoid;
+  }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 9.5pt; page-break-inside: avoid; }
+  th, td { border: 1px solid #b9c6d2; padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { background: #dce6ef; color: #14304a; }
+  .lead { font-size: 11pt; color: #34495e; margin: 8px 0 16px; }
+  .box { border: 1px solid #c5d2de; background: #f6f9fc; border-radius: 6px; padding: 10px 14px; margin: 12px 0; page-break-inside: avoid; }
+  .warn { border-left: 5px solid #d9822b; background: #fdf4ea; padding: 8px 14px; margin: 12px 0; border-radius: 4px; page-break-inside: avoid; }
+  .ok { border-left: 5px solid #2e9e5b; background: #eef9f1; padding: 8px 14px; margin: 12px 0; border-radius: 4px; page-break-inside: avoid; }
+  .chk { list-style: none; padding-left: 4px; }
+  .chk li::before { content: "\2610 "; color: #2f7ab5; font-weight: bold; margin-right: 4px; }
+  .phase-tag { display: inline-block; background: #2f7ab5; color: #fff; font-size: 9pt; padding: 1px 9px; border-radius: 10px; margin-right: 6px; }
+  .small { font-size: 9pt; color: #5a6b7b; }
+  .pagebreak { page-break-before: always; }
+  .meta { color: #5a6b7b; font-size: 9.5pt; }
+  .roadmap { width:100%; border:none; margin:10px 0; }
+  .roadmap td { border:none; padding:2px 0; }
+  hr { border: none; border-top: 1px solid #d0d9e2; margin: 18px 0; }
+</style>
+</head>
+<body>
+
+<h1>大阪市 中古マンション分析ポートフォリオ<br>完成・公開 手順書</h1>
+<p class="lead">未経験者でも再現できる「分析の磨き上げ → GitHub/Tableau公開 → 面接で説明できる状態」までの全工程</p>
+<p class="meta">対象プロジェクト: osaka-fudosan-dataanalysis ／ 作成: 2026-06-23 ／ 想定読者: データアナリスト転職を目指す本人</p>
+
+<div class="box">
+<h4>この手順書のゴール</h4>
+<p>分析・dbt・BQML・Tableau の構築は<strong>すでに完了</strong>しています。残る作業は「新しく作る」ことではなく、<strong>正しさを検証し、伝わる形に整え、自分の言葉で説明できる状態に仕上げる</strong>ことです。本書はその全工程を、順番どおり実行すれば誰でも同じ結果に辿り着くように書いています。</p>
+</div>
+
+<div class="box">
+<h4>最初に覚える3原則</h4>
+<ol>
+<li><strong>数字は必ず裏取りする</strong> ― PDF・README・Tableauに載る数値は、実テーブルか <code>docs/</code> のログで確認してから書く。AIが生成した数字をそのまま使わない。</li>
+<li><strong>成果物は増やさず磨く</strong> ― 3枚PDF・Tableau・GitHubの3点で十分。新しい資料を増やすほど数値の矛盾リスクが増える。</li>
+<li><strong>ゴールは「自分の言葉で説明できる状態」</strong> ― 「Claude Codeが作ったので分かりません」は不合格。処理の<strong>目的・入力・出力・判断理由</strong>を言えればよい（コード暗記は不要）。</li>
+</ol>
+</div>
+
+<div class="warn">
+<h4>このプロジェクト特有の重要な事実（暗記すべき数値）</h4>
+<ul>
+<li><strong>学習期間 = 2021〜2024年 / 検証期間 = 2025年</strong>（成約データの提供開始が2021年。時系列で分割し、未来データで検証＝リークなし）</li>
+<li>技術スタック = <strong>BigQuery + dbt + BQML + Tableau</strong>（前処理・特徴量はSQL/dbt、検証はPythonスクリプト）</li>
+<li>絞り込み = 大阪市・面積20〜60㎡・徒歩20分・築5〜60年 → <strong>2,106件 → 151駅 → 66駅 → 本命10駅</strong></li>
+<li>採用モデル = <strong>Model C</strong>（MAE 約12.1万円/㎡・hit10 0.269）。Baseline(18.6万)比 <strong>約35%改善</strong>。Model F は精度1位(10.1万)だが郊外を偽の割安にするため<strong>不採用</strong>。</li>
+<li>調査優先度スコア = <strong>割安45 + 信頼25 + 地価15 + 品質15 − リスク20</strong>（0〜100にクリップ）</li>
+</ul>
+</div>
+
+<h2>全体ロードマップ（7フェーズ）</h2>
+<table>
+<tr><th>順</th><th>フェーズ</th><th>目的</th><th>目安</th><th>主な成果物</th></tr>
+<tr><td>1</td><td>分析の最終検証</td><td>数値・ロジックの矛盾をゼロにする</td><td>1〜2日</td><td>docs/final_validation.md</td></tr>
+<tr><td>2</td><td>GitHub整備</td><td>開いた瞬間に内容が伝わる状態に</td><td>2日</td><td>README.md / 公開リポジトリ</td></tr>
+<tr><td>3</td><td>Tableau Public公開</td><td>誰でも触れるURLにする</td><td>半日〜1日</td><td>公開URL</td></tr>
+<tr><td>4</td><td>応募用PDFの最終調整</td><td>既存3枚を仕上げる（新規は作らない）</td><td>0.5〜1日</td><td>3枚PDF最終版</td></tr>
+<tr><td>5</td><td>NotebookLMレビュー</td><td>第三者視点で矛盾・不足を発見</td><td>半日</td><td>修正リスト</td></tr>
+<tr><td>6</td><td>面接説明準備</td><td>30秒/3分/10分＋想定問答</td><td>2〜3日＋継続</td><td>説明スクリプト</td></tr>
+<tr><td>7</td><td>応募導線の完成</td><td>職務経歴書→PDF→Tableau→GitHub</td><td>1日</td><td>導線一式</td></tr>
+</table>
+<p class="small">※ フェーズ1を飛ばしてPDFやデザインに進まないこと。土台の数値が間違っていると、後工程すべてが崩れる。</p>
+
+<!-- ===================== PHASE 1 ===================== -->
+<h2 class="pagebreak"><span class="phase-tag">Phase 1</span>分析の最終検証（最優先）</h2>
+<p><strong>目的:</strong> Tableau・PDF・READMEに載せる数値とロジックに矛盾が無いことを、自分の手で確認して記録する。ここが全工程の土台。</p>
+
+<h3>1-0. 準備：BigQuery接続のハングを回避する</h3>
+<p>このPC環境では <code>gcloud</code> が起動時に固まり、<code>bq</code>・dbt が巻き込まれてフリーズすることがある。検証コマンドの前に必ず以下の環境変数を付ける（Git Bash）。</p>
+<pre>export GOOGLE_APPLICATION_CREDENTIALS=&lt;ADCのコピーパス&gt; \
+       GOOGLE_CLOUD_PROJECT=osaka-fudosan-dataanalysis \
+       DO_NOT_TRACK=1 PYTHONUTF8=1
+# dbt 実行例（Python 3.12 の dbt を使う）
+/c/Users/sn/AppData/Local/Programs/Python/Python312/Scripts/dbt.exe run
+# bq はハングするので、件数確認は Python BigQuery クライアント(scripts/verify_*.py)で行う</pre>
+<p class="small">日本語クエリを投げる時は <code>PYTHONUTF8=1</code> ＋引数渡し（標準入力はcp932で文字化けする）。</p>
+
+<h3>1-1. 数値の一致を確認する</h3>
+<p>「Tableauに出ている数字」と「BigQuery/Pythonで再計算した数字」が一致するかを突き合わせる。1つでもズレたら原因を特定するまで先に進まない。</p>
+<ul class="chk">
+<li>2025年の対象取引件数（Tableau表示 2,106 と一致するか）</li>
+<li>相場比較可能な駅数（151）／10件以上の駅数（66）／本命駅数（10）</li>
+<li>Model C の評価値（MAE・hit10）が <code>docs/decision_log.md</code> の記録と一致</li>
+<li>調査優先度スコア上位（玉造84.1・大国町82.4 など）がTableau表と一致</li>
+</ul>
+
+<h3>1-2. 情報漏洩（リーク）が無いことを確認する</h3>
+<div class="box">
+<p>面接で最も突かれる箇所。次の3点を「なぜ漏れていないか」言える状態にする。</p>
+<table>
+<tr><th>項目</th><th>確認すること</th></tr>
+<tr><td>駅中央値㎡単価</td><td>各Foldの<strong>訓練期間のデータだけ</strong>から算出している（検証年2025の値は使っていない）。これが予測特徴量に入っても未来情報を見ていない。</td></tr>
+<tr><td>公示地価</td><td><strong>予測モデルには入れていない</strong>。地価補足スコア(15点)としてのみ使用。理由を説明できること。</td></tr>
+<tr><td>欠損補完（築年・徒歩分）</td><td>補完に使う中央値も<strong>訓練期間のみ</strong>から計算。検証データを見て埋めていない。</td></tr>
+</table>
+</div>
+
+<h3>1-3. ロジックの向き・妥当性を確認する</h3>
+<ul class="chk">
+<li>割安度のプラス／マイナスの向きが正しい（相場より「下」が割安＝高スコア側）</li>
+<li>取引件数が少なすぎる駅を高評価していない（10件未満は除外、件数を信頼性に加点）</li>
+<li>外れ値・欠損の処理を1つずつ説明できる（改装情報94%欠損→「不明」をリスクとして扱う 等）</li>
+<li>スコア配点（45/25/15/15/−20）を電卓で1駅ぶん再現できる</li>
+<li>平野が「スコア1位なのに本命外」である理由（旧耐震86%＝逆選択）を説明できる</li>
+</ul>
+
+<h3>1-4. 成果物：docs/final_validation.md を作る</h3>
+<p>確認結果を1ファイルに残す。下のテンプレをコピーして埋める。</p>
+<pre># 最終検証 (final_validation.md)   検証日: 2026-06-__
+
+## 1. 数値一致
+| 項目 | Tableau表示 | 再計算 | 一致 |
+|---|---|---|---|
+| 2025対象取引 | 2,106 | ____ | ✅/❌ |
+| 比較可能な駅 | 151 | ____ | |
+| 10件以上の駅 | 66 | ____ | |
+| Model C MAE(円/㎡) | 120,567 | ____ | |
+| Model C hit10 | 0.269 | ____ | |
+
+## 2. リーク確認
+- 駅中央値㎡単価：各Fold訓練期間のみから算出（検証年を含まない） … 確認済み
+- 公示地価：予測モデル未使用（スコアのみ） … 確認済み
+- 欠損補完の中央値：訓練期間のみ … 確認済み
+
+## 3. ロジック
+- 学習期間：2021〜2024年 ／ 検証期間：2025年
+- 割安度の向き：相場より下振れ＝高スコア
+- 件数フィルタ：駅取引10件以上のみランキング対象
+
+## 4. 注意事項（資料にも必ず明記）
+- 成約データであり売出ではない。最終判断は現物・謄本確認が必要
+- 取引件数が少ない駅は参考値
+- 駅相対乖離が大きい物件は個別確認が必要</pre>
+
+<div class="ok"><strong>Phase 1 完了の判定：</strong> final_validation.md が埋まり、数値一致がすべて✅、リーク3点を口頭で説明できる。</div>
+
+<!-- ===================== PHASE 2 ===================== -->
+<h2 class="pagebreak"><span class="phase-tag">Phase 2</span>GitHub を採用担当向けに整える</h2>
+<p><strong>目的:</strong> リポジトリを開いた瞬間に「何をしたプロジェクトか」が伝わる状態にする。コードがあるだけでは伝わらない。</p>
+
+<h3>2-1. 秘匿情報・不要ファイルの点検（公開前の安全確認）</h3>
+<div class="warn">認証情報やAPIキーを一度でも公開すると取り返しがつかない。push前に必ず実施。</div>
+<pre># 1) 公開対象として追跡されているファイル一覧を目視
+git ls-files | less
+
+# 2) 機密語が含まれていないか全文検索（ヒットしたら対処）
+git grep -nIE "api[_-]?key|secret|password|BEGIN PRIVATE KEY|Ocp-Apim" -- . ':!*.html'
+
+# 3) .gitignore で確実に除外されているか確認
+git check-ignore -v data/raw  data/gis/raw  profiles.yml  .env</pre>
+<ul class="chk">
+<li>data/raw・data/gis/raw・profiles.yml・.env が追跡されていない</li>
+<li>reinfolibのキー等が直書きされていない（スクリプトは環境変数/引数経由に）</li>
+<li>公開してよいサンプルのみ data/samples に置く（生データは公開しない）</li>
+<li>SQL/Pythonのファイル名が役割の分かる名前になっている</li>
+</ul>
+
+<h3>2-2. README.md を作る（GitHubの正面玄関）</h3>
+<p>新しい「GitHub説明PDF」は作らない。説明はREADMEに集約する（情報源を1つにするため）。冒頭3行で価値が伝わる順に並べる。</p>
+<table>
+<tr><th>節</th><th>内容</th></tr>
+<tr><td>① 一行サマリー＋想定ユーザー</td><td>「予測㎡単価と実取引㎡単価の乖離から割安候補駅を抽出」＋想定ユーザー=買取再販の仕入れ担当</td></tr>
+<tr><td>② ビジネス課題と成果</td><td>151駅を人手で当たる代わりに10駅へ。<strong>調査対象を約1/14に圧縮</strong></td></tr>
+<tr><td>③ 技術スタック</td><td>BigQuery / dbt / BQML / Tableau（採用側に一番刺さる）</td></tr>
+<tr><td>④ 分析フロー図</td><td>raw → staging → intermediate → mart → BQML → Tableau</td></tr>
+<tr><td>⑤ 主要な意思決定</td><td>Q1逆選択 / Q2モデル棄却 / Q3限界 / Q4件数加点</td></tr>
+<tr><td>⑥ 調査優先度スコア</td><td>配点45/25/15/15/−20と各軸の意味</td></tr>
+<tr><td>⑦ 結果</td><td>Top5（玉造・大国町・堺筋本町・伝法・森ノ宮）と平野除外の話</td></tr>
+<tr><td>⑧ 限界と前提</td><td>成約≠売出 / 現物確認必須 / 改装94%欠損</td></tr>
+<tr><td>⑨ 再現手順</td><td>実行順序（後述の付録）</td></tr>
+<tr><td>⑩ リンク</td><td>Tableau Public・3枚PDF・連絡先</td></tr>
+</table>
+
+<h3>2-3. フォルダ構成（このプロジェクトの実態に合わせる）</h3>
+<pre>osaka-fudosan-dataanalysis/
+├─ README.md          ← 正面玄関
+├─ CLAUDE.md          ← 作業ルール（公開可）
+├─ dbt/               ← staging / intermediate / marts
+├─ sql/               ← checks / bqml / ad_hoc
+├─ scripts/           ← Python（取得・検証）
+├─ docs/              ← work_log, decision_log, 検証, 面接メモ
+├─ tableau/           ← .twb と素材
+├─ data/samples/      ← 公開可能なサンプルのみ
+└─ outputs/           ← 図・表</pre>
+<p class="small">※ ChatGPT案の <code>notebooks/</code> は不要（このプロジェクトはJupyter中心ではない）。無い物を作らない。</p>
+
+<h3>2-4. ブランチ統合と公開</h3>
+<pre># 作業ブランチ feature/step10-model を main に統合
+git checkout main
+git merge --no-ff feature/step10-model
+# gh CLI は未導入。下のいずれかで公開：
+#  (A) gh をインストールして  gh repo create --public --source=. --push
+#  (B) GitHubで空リポジトリを作成 → git remote add origin &lt;URL&gt; → git push -u origin main
+#      （HTTPSならPersonal Access Tokenでログイン）</pre>
+<div class="ok"><strong>Phase 2 完了の判定：</strong> READMEだけ読めばプロジェクトの全体像が分かる。秘匿情報チェック全✅。公開URLが取得できた。</div>
+
+<!-- ===================== PHASE 3 ===================== -->
+<h2 class="pagebreak"><span class="phase-tag">Phase 3</span>Tableau Public へ公開</h2>
+<p><strong>目的:</strong> 採用担当が実際に触れるURLにする。完成していてもアクセスできなければ意味がない。</p>
+<ul class="chk">
+<li>タイトルだけで分析内容が分かる</li>
+<li>最初に見るべきダッシュボード（サマリー）が分かる順序になっている</li>
+<li>配点パターン切替（A/B/C）フィルターが正常に動く</li>
+<li>凡例・色の意味が一貫している／単位（万円/㎡）がある</li>
+<li>データ期間（2021〜2025）が記載されている</li>
+<li>ローカルのファイルパスや個人情報が表示されていない</li>
+<li>「調査優先度が高い＝投資推奨ではない」注記が入っている</li>
+</ul>
+<div class="box"><strong>必ず入れる注記文：</strong><br>本分析は公開データに基づく一次スクリーニングであり、実際の仕入れ・投資判断には物件状態、権利関係、管理状況、周辺環境などの追加調査が必要です。</div>
+<p>公開後、取得したURLを README とPDF最終ページに反映する。</p>
+<div class="ok"><strong>Phase 3 完了の判定：</strong> 公開URLで誰でも閲覧でき、フィルターが動き、注記が表示される。</div>
+
+<!-- ===================== PHASE 4 ===================== -->
+<h2><span class="phase-tag">Phase 4</span>応募用PDFの最終調整（新規作成はしない）</h2>
+<p><strong>方針:</strong> 既に3枚PDFが完成済み。ChatGPT案の「10〜15ページの新規PDF」は作らない。深掘りはREADMEが担当。3枚PDFは「3分で価値が伝わる入口」として最終調整だけ行う。</p>
+<ul class="chk">
+<li>3ページすべてに「調査候補／買い判断ではない」の注記がある</li>
+<li>平野＝除外理由（逆選択）が明示されている</li>
+<li>スコア内訳（45/25/15/15/−20）がどこかに出ている</li>
+<li>技術スタック1行（BigQuery/dbt/BQML/Tableau）が入っている</li>
+<li>最終ページにGitHub・Tableau Public・連絡先のリンク</li>
+</ul>
+<p class="small">もしPDFを作り直す必要が出たら、Claude Codeに「HTMLを作らせ → ヘッドレスChromeでPDF化」が安定（本手順書もその方式で生成）。ただし<strong>数値は推測させず既存ファイル参照を厳命</strong>すること。</p>
+
+<!-- ===================== PHASE 5 ===================== -->
+<h2><span class="phase-tag">Phase 5</span>NotebookLM で第三者レビュー</h2>
+<p><strong>目的:</strong> 自分では気づけない矛盾・不足を、別AIの視点で洗い出す。<strong>指摘はそのまま採用せず、必ず事実確認してから直す。</strong></p>
+<h4>入れる資料</h4>
+<p>完成PDF / README / 手順書 / data_dictionary.md / モデル評価結果 / Tableau説明</p>
+<h4>確認させるプロンプト</h4>
+<pre>このポートフォリオについて、根拠資料と該当箇所を示しながら確認してください。
+1. 分析目的と結論が一致しているか
+2. PDFとREADMEで数値・定義が矛盾していないか
+3. 実施していない分析を実施したように見せていないか
+4. 採用担当が理解しにくい箇所はどこか
+5. アナリストが技術的に質問しそうな箇所はどこか
+6. ビジネス上・分析上の限界は何か</pre>
+<div class="warn">NotebookLMは数値を取り違えることがある。指摘を受けたら <strong>docs/ の実ファイルで裏取り</strong>してから修正する。鵜呑み厳禁。</div>
+
+<!-- ===================== PHASE 6 ===================== -->
+<h2 class="pagebreak"><span class="phase-tag">Phase 6</span>面接で説明できるようにする</h2>
+<p><strong>目的:</strong> 成果物を「自分の言葉で」説明できる状態にする。これが最終ゴール。</p>
+
+<h3>6-1. 長さ別の説明を3つ用意する</h3>
+<h4>30秒版（暗記する）</h4>
+<div class="box">大阪市の中古マンション取引データを使い、実取引㎡単価と予測㎡単価の乖離から割安候補駅を抽出しました。単に安い駅を選ぶのではなく、取引件数・価格のばらつき・地価・データ品質・建物リスクを加味した調査優先度スコアを作り、Tableauで可視化。151駅を10駅まで絞り込み、調査工数を約1/14に圧縮しました。</div>
+<h4>3分版（順番）</h4>
+<p>① なぜこのテーマか → ② 誰のどんな課題か（買取再販の仕入れ初期スクリーニング）→ ③ 使ったデータ → ④ どう予測したか（2021-2024で学習・2025で検証）→ ⑤ 何が分かったか → ⑥ 限界。</p>
+<h4>10分版</h4>
+<p>PDFとTableauを画面共有しながら、3分版を各論で深掘り。</p>
+
+<h3>6-2. 必ず答えられるようにする質問（このプロジェクト特有）</h3>
+<table>
+<tr><th>質問</th><th>回答の骨子</th></tr>
+<tr><td>なぜ公示地価を予測モデルに入れない？</td><td>地価は「割安さ」と相関しエリアの結果を先取りしてしまう。割安の判定軸を汚さないため、予測ではなく地価補足スコア(15点)に分離した。</td></tr>
+<tr><td>駅中央値㎡単価を入れたらリークでは？</td><td>各Foldの<strong>訓練期間のみ</strong>から算出。検証年2025の値は使っていないので未来情報は見ていない。</td></tr>
+<tr><td>なぜ一番当たるModel Fを使わない？</td><td>Fは精度1位だが郊外を過大予測し「偽の割安」を作り順位を歪める。目的は予測精度でなく駅の順位付けなので、順位が安定するModel Cを採用。</td></tr>
+<tr><td>なぜMAEも見る？（MAPEだけでない）</td><td>MAPEは低価格帯で誤差が膨らみやすい。円/㎡の絶対誤差(MAE)を併用し実務的な外れ幅も確認した。</td></tr>
+<tr><td>取引件数が少ない駅は？</td><td>10件未満は除外し、件数を信頼性スコアに加点。少数データのまぐれ安値を抑える。</td></tr>
+<tr><td>一番安い物件を本命にしない理由は？</td><td>安い物件ほど旧耐震×改装不明（訳あり）が多い＝逆選択。これを可視化して自動除外（平野が好例）。</td></tr>
+<tr><td>外れ値・欠損の扱いは？</td><td>改装情報94%欠損→「不明」をリスク扱い。築年・徒歩分は訓練期間中央値で補完しフラグ付与。</td></tr>
+<tr><td>AIに任せた部分と自分の判断は？</td><td>コード生成はAI、<strong>特徴量の分離・モデル採用・スコア配点・限界の線引きは自分の判断</strong>。各判断は decision_log に記録。</td></tr>
+<tr><td>実務で使うなら何を足す？</td><td>売出データ・管理状態・成約遅延の補正・駅相対の外れ値フラグ。</td></tr>
+<tr><td>分析の最大の弱点は？</td><td>「割安＝下振れ」は好機か衰退かを単独では判別できない。だからStep12の逆選択検証と現物確認を前提にしている。</td></tr>
+</table>
+<div class="warn">「Claude Codeが作ったので分かりません」は絶対NG。コード暗記は不要だが、<strong>各処理の目的・入力・出力・判断理由</strong>は言えること。</div>
+
+<!-- ===================== PHASE 7 ===================== -->
+<h2><span class="phase-tag">Phase 7</span>応募用の導線を完成させる</h2>
+<p>入口は複雑にしない。次の一本道にする。</p>
+<table class="roadmap"><tr><td><strong>職務経歴書 → ポートフォリオPDF → Tableau Public → GitHub</strong></td></tr></table>
+<h4>職務経歴書の記載（1〜2行）</h4>
+<div class="box">大阪市の中古マンション取引データを用い、予測価格との乖離から仕入れ候補駅を抽出する分析ポートフォリオを作成。SQL・Python・BigQuery・dbt・BQML・Tableauを使用し、GitHubおよびTableau Publicで公開。</div>
+<h4>PDF最終ページに載せる要素</h4>
+<p>GitHub URL ／ Tableau Public URL ／ メールアドレス ／ 使用技術 ／（任意）QRコード</p>
+
+<!-- ===================== 付録 ===================== -->
+<h2 class="pagebreak">付録A：再現のための実行順序</h2>
+<p>READMEの「再現手順」にもこの順で記載する。</p>
+<pre>1. データ取得     scripts/download_transactions*.py（reinfolib）/ GIS手動DL
+2. BigQuery投入   raw_transactions / raw_station_master / raw_land_price
+3. dbt build      dbt run（staging → intermediate → marts）/ dbt test
+4. BQML           sql/bqml/ で7モデル作成 → 02_evaluate.sql → Model C採用
+5. 予測生成       03_predict.sql（predicted_price_per_sqm）
+6. 乖離・スコア   int_property_deviation → mart_opportunity_list
+7. Tableau        mart_opportunity_list / mart_condo_price を接続</pre>
+
+<h2>付録B：用語集</h2>
+<table>
+<tr><th>用語</th><th>意味</th></tr>
+<tr><td>調査優先度スコア</td><td>割安45+信頼25+地価15+品質15−リスク20。駅を「次に調べる順」に並べる総合点</td></tr>
+<tr><td>安定候補（◎）</td><td>配点パターン3種のうち2回以上Top20に入る駅。順位が配点に揺さぶられない</td></tr>
+<tr><td>本命（★）</td><td>安定候補◎ かつ 建物リスクが低い駅。Top5はこの中から選ぶ</td></tr>
+<tr><td>逆選択</td><td>安い物件ほど旧耐震×改装不明（訳あり）が多い現象。割安シグナルの落とし穴</td></tr>
+<tr><td>駅相対乖離</td><td>市場全体と駅内の中央値で二段補正した「その駅の相場に対する割安度」</td></tr>
+<tr><td>hit10</td><td>予測が実価格の±10%以内に収まった割合（高いほど良い）</td></tr>
+</table>
+
+<h2>付録C：一括チェックリスト</h2>
+<ul class="chk">
+<li>Phase1: final_validation.md 完成・数値一致・リーク3点を説明できる</li>
+<li>Phase2: README完成・秘匿情報チェック全✅・main統合・push完了</li>
+<li>Phase3: Tableau Public公開・フィルター動作・注記表示</li>
+<li>Phase4: 3枚PDF最終調整（注記/平野/スコア内訳/技術スタック/リンク）</li>
+<li>Phase5: NotebookLMレビュー・指摘を裏取りして修正</li>
+<li>Phase6: 30秒/3分/10分・想定問答13問に回答できる</li>
+<li>Phase7: 職務経歴書記載・導線4点リンク完成</li>
+</ul>
+
+<hr>
+<p class="small">本手順書はこのプロジェクトの docs/（work_log・decision_log 等）と実装に基づいて作成。数値は実装当時の記録であり、公開前に Phase 1 の最終検証で再確認すること。</p>
+
+</body>
+</html>
