@@ -168,6 +168,10 @@ osaka-fudosan-dataanalysis/
 
 ---
 
+## 制作にあたって（使用ツールと役割分担）
+
+本プロジェクトの実装にはAIコーディング支援（Claude Code）を活用しています。一方で、分析設計の中核 ―― **分析対象の絞り込み、予測特徴量とスコア項目の分離、モデルの採用判断（Model C vs F）、調査優先度スコアの配点、公開データの限界の線引き** ―― はすべて自分で判断し、その理由を [docs/decision_log.md](docs/decision_log.md) に記録しています。コードを書く速度をAIで上げつつ、「何を・なぜそう判断したか」を自分の言葉で説明できる状態を重視しました。
+
 ## リンク
 
 - 📊 Tableau Public：https://public.tableau.com/shared/KR589GQZX?:display_count=n&:origin=viz_share_link

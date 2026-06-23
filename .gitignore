@@ -37,3 +37,8 @@ Thumbs.db
 *.twb
 *.twbr
 ~$*
+
+# 公開しない内部資料（作業ルール・進行管理メモ。公開リポジトリには含めない）
+CLAUDE.md
+docs/portfolio_completion_manual.html
+docs/portfolio_completion_manual.pdf
