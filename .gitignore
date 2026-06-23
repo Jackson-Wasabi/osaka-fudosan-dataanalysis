@@ -31,6 +31,9 @@ __pycache__/
 Thumbs.db
 .vscode/
 
-# Tableau 抽出など大容量バイナリ
+# Tableau 抽出・作業ファイル（最終成果はTableau Publicのリンク。再現は分析パイプライン＋READMEで担保）
 *.hyper
 *.twbx
+*.twb
+*.twbr
+~$*

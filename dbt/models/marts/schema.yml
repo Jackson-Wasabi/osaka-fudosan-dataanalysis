@@ -117,3 +117,72 @@ models:
         description: "改装状況（元データ。空欄=不明、改装済み）"
       - name: built_year
         description: "建築年（元データ。例: 2013年。空欄あり）"
+
+  - name: mart_opportunity_list
+    description: "駅単位の調査優先度ランキング（本命の成果物・D-024）。2025年取引10件以上の駅を、割安度45+市場信頼性25+地価補足15+データ品質15−リスク20でスコア化（D-027/D-028）。仕入れが優先調査すべきエリアの一次スクリーニング。買い判断ではなく逆選択のため人の現物確認前提。"
+    columns:
+      - name: station_name
+        description: "駅名（正規化後）。ランキングのキー。"
+        tests:
+          - not_null
+          - unique
+      - name: ward
+        description: "代表区（大阪市○○区。駅が区境をまたぐ場合は最頻区）。"
+      - name: line_name
+        description: "代表路線名。"
+      - name: station_lat
+        description: "駅代表点の緯度（Tableau地図用）。"
+      - name: station_lon
+        description: "駅代表点の経度（Tableau地図用）。"
+      - name: n_transactions_2025
+        description: "2025年のscope内取引件数（10件以上に限定）。割安シグナルの土台。"
+        tests:
+          - not_null
+      - name: actual_median_price_per_sqm
+        description: "2025年の実勢㎡単価の中央値（円/m²）。エリア水準の参考。"
+      - name: under_level
+        description: "①駅水準の割安度＝station_median_adjusted_deviation。負ほど相場（立地・築年から期待される水準）より安いエリア。割安度45点の主軸。"
+      - name: bargain_share
+        description: "②補助：駅内で-15%以上安い物件の比率。割高エリアでも高くなり得る（逆選択の目印）。スコアには使わず併記。"
+      - name: sc_value
+        description: "割安度スコア（最大45）。under_levelが安い順のパーセンタイル×45。"
+      - name: sc_reliability
+        description: "市場信頼性スコア（最大25・バランス型）＝件数(0.6)+IQR狭さ(0.4)の加重。取引件数が多く相場が締まっているほど高い。"
+      - name: sc_land
+        description: "地価補足スコア（最大15）。駅平均の公示価格が高いほど高い（エリア基礎体力）。"
+      - name: sc_quality
+        description: "データ品質スコア（最大15）＝15×(1−補完物件割合)。D-029で改装不明(94%欠損)は除外し補完フラグのみで算出。"
+      - name: risk_penalty
+        description: "リスク減点（0〜−20）。旧耐震×改装・築年マイナス補正・重複・外れ値の物件割合に比例。"
+      - name: priority_score
+        description: "調査優先度の総合スコア（0〜100クリップ）。各要素の合計。"
+        tests:
+          - not_null
+      - name: priority_rank
+        description: "priority_score（バランス型）降順の順位（1位＝最優先調査エリア）。"
+        tests:
+          - not_null
+      - name: score_discount
+        description: "PART17-3 割安重視型(60/15/10/15/-20)のスコア。割安候補を広く拾う配点。"
+      - name: rank_discount
+        description: "割安重視型での順位。"
+      - name: score_risk
+        description: "PART17-3 リスク重視型(35/30/15/20/-30)＋旧耐震減点(-30×high_risk_share)のスコア(D-033)。安全候補優先。このモードのみ旧耐震を採点に反映。"
+      - name: rank_risk
+        description: "リスク重視型での順位。"
+      - name: stable_flag
+        description: "安定候補フラグ（PART17-3/17-4）。3配点中2回以上Top20ならTRUE。配点を変えても上位＝頑健な候補。"
+      - name: old_seismic_share
+        description: "C案/PART15-A：旧耐震(推定建築年<1982)物件の割合。減点でなく要確認理由として表示。"
+      - name: high_risk_share
+        description: "C案/PART15-A：旧耐震×改装不明（リスク高）物件の割合。現場が要確認理由を見るための列。"
+      - name: iqr_ratio
+        description: "透明性用：駅㎡単価のIQR÷中央値。小さいほど相場が安定。"
+      - name: avg_land_price
+        description: "透明性用：駅周辺の最寄り公示価格の平均（円/m²）。"
+      - name: quality_issue_share
+        description: "透明性用：補完（築年・徒歩・地価）を含む物件の割合。D-029で改装不明は除外。"
+      - name: risk_share
+        description: "透明性用：リスク該当（旧耐震×改装・築年補正・重複・外れ値）物件の割合。"
+      - name: station_transaction_count
+        description: "透明性用：訓練期間（2021-2024）のscope内取引件数。"

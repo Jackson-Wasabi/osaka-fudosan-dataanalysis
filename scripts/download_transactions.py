@@ -13,7 +13,9 @@ import urllib.error
 import zipfile
 
 BASE = "https://www.reinfolib.mlit.go.jp/in-api/api-aur/aur/csv/transactionPrices"
-KEY = "6da659233e9c4d3b9daaedfb22c750d9"  # サイトのフロントエンドが全ブラウザ訪問者に配布する公開キー
+# reinfolib サイトのフロントエンドが全ブラウザ訪問者に配布する公開キー（個人の認証情報ではない）。
+# 直書きを避け環境変数 REINFOLIB_KEY を優先。未設定時は公開キーをデフォルトとして使う。
+KEY = os.environ.get("REINFOLIB_KEY", "6da659233e9c4d3b9daaedfb22c750d9")
 DEST = r"C:\Users\sn\Documents\データ分析\osaka-fudosan-dataanalysis\data\raw"
 YEARS = [2020, 2021, 2022, 2023, 2024, 2025]
 

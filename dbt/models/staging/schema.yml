@@ -8,6 +8,8 @@ sources:
       - name: raw_transactions
       - name: raw_station_master_2025
       - name: raw_land_price_2025
+      - name: predictions_model_c
+        description: "Model C の予測㎡単価（2025年候補）。BQML(ML.PREDICT)で生成し sql/bqml/03_predict.sql で焼いたテーブル。dbt管理外の重いML出力を source として取り込む。"
 
 models:
   - name: stg_transactions
