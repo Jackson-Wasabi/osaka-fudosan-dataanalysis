@@ -42,3 +42,10 @@ Thumbs.db
 CLAUDE.md
 docs/portfolio_completion_manual.html
 docs/portfolio_completion_manual.pdf
+docs/_portfolio_process_notes.md
+# デッキ/スクショ生成などの制作ツール（分析パイプラインではない）
+scripts/make_storyboard.py
+scripts/make_summary_revised.py
+scripts/make_wireframe.py
+scripts/shot.py
+scripts/shot.ps1

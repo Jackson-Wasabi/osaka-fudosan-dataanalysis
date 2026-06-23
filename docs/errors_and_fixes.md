@@ -73,9 +73,9 @@
 - **事象**: cp932コンソールで「✓」を print できず UnicodeEncodeError。
 - **修正**: 記号をOK/NGに置換し、`python -X utf8` で実行。
 
-## 2026-06-12 — PDF 手順書が Read ツールで読めない
+## 2026-06-12 — PDF をそのまま読み込めない
 
-- **事象**: `osaka_fudosan_dataanalysis_manual_v9.pdf` を Claude Code の Read ツールで開くと `pdftoppm failed: Command 'pdftoppm' not found` エラー。
+- **事象**: `osaka_fudosan_dataanalysis_manual_v9.pdf` を画像変換経由で開こうとすると `pdftoppm failed: Command 'pdftoppm' not found` エラー。
 - **原因**: PDF→画像変換に使う Poppler (pdftoppm) が Windows 環境に未インストール。
 - **修正**: Python 3.12 に pypdf 6.13.2 をインストールし、`scripts/extract_pdf.py` でテキスト抽出（出力: `../manual_v9_extracted.txt`、24ページ・約3万字）。
 - **再発防止**: 今後 PDF を読む場合は同スクリプトを再利用する。
