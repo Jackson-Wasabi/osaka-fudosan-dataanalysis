@@ -143,7 +143,7 @@ osaka-fudosan-dataanalysis/
 │  ├─ checks/             … EDA・投入検証（01〜10）
 │  └─ bqml/               … モデル作成・評価・予測・係数・バイアス（00〜06）
 ├─ scripts/               … Python（データ取得・読み取り専用の検証）
-├─ docs/                  … work_log / decision_log / 検証 / 面接メモ / 分析サマリーPDF
+├─ docs/                  … work_log / decision_log / 検証 / 分析サマリーPDF
 ├─ data/
 │  ├─ raw/                … 生データ（非公開・.gitkeepのみ）
 │  ├─ gis/processed/      … 公開オープンデータの加工CSV
