@@ -49,6 +49,17 @@ h1,h2,h3{text-wrap:balance;line-break:strict;}
 .hero .intro em{font-style:normal;font-weight:700;color:#1f4e79;}
 .hero .intro b{color:#14304a;font-weight:700;}
 .hero .intro .warn{color:#c1771a;font-weight:700;}
+.menu-list a b{display:inline-block;min-width:20px;color:#1f4e79;font-weight:700;}
+.signpost a{color:#14304a;font-weight:700;text-decoration:none;border-bottom:2px solid #e0913a;padding-bottom:2px;}
+.signpost a:hover{color:#1f4e79;}
+.funnel{display:flex;align-items:stretch;gap:8px;margin:16px 46px;}
+.funnel .fstep{flex:1;background:#f7f9fb;border:1px solid #e2e8ee;border-radius:10px;padding:14px 8px;text-align:center;display:flex;flex-direction:column;justify-content:center;}
+.funnel .fnum{font-size:21px;font-weight:900;color:#14304a;line-height:1.15;letter-spacing:.5px;}
+.funnel .fnum small{font-size:12px;font-weight:700;color:#5b6b7b;margin-left:2px;}
+.funnel .flabel{font-size:11.5px;color:#5b6b7b;margin-top:7px;line-height:1.45;}
+.funnel .fgoal{background:#fbf3e8;border-color:#ecd6b6;}
+.funnel .fgoal .fnum{color:#c1771a;}
+.funnel .farrow{display:flex;align-items:center;color:#b3bfca;font-weight:900;font-size:17px;}
 h2{font-size:18px;font-weight:700;color:#fff;background:#14304a;padding:7px 14px;border-radius:5px;margin:34px 46px 0;scroll-margin-top:74px;line-height:1.5;}
 h2:first-of-type{margin-top:30px;}
 .wrap>h3{margin:18px 46px 0;}
@@ -65,11 +76,9 @@ pre code{background:none;color:inherit;padding:0;word-break:normal;}
 img{max-width:calc(100% - 92px);border:1px solid #d0d9e2;border-radius:6px;margin:8px 46px;display:block;}
 blockquote{border-left:4px solid #c5d2de;background:#f6f9fc;margin:12px 46px;padding:10px 16px;color:#34495e;}
 a{color:#2f7ab5;}
-@media(max-width:640px){.wrap{margin:10px;}.hero,.toc{padding-left:20px;padding-right:20px;}.toc,.dash{margin:20px;}.hero .intro{padding:18px 18px 16px;}.thumbs{grid-template-columns:1fr;}.hl{margin:6px 20px;}h2,.wrap>p,.wrap>ul,.wrap>ol,.wrap>blockquote,.wrap>pre,.wrap>h3,.wrap>hr,table,img{margin-left:20px;margin-right:20px;width:auto;}.hero h1{font-size:23px;}}</style></head><body><div class="nav"><div class="menu"><button class="menu-btn">☰ 目次</button><div class="menu-list"><a href="#results">成果</a><a href="#decisions">設計で大事にした判断</a><a href="#data">使用データ</a><a href="#flow">分析フロー</a><a href="#preprocessing">データ前処理</a><a href="#evaluation">モデル評価とスコア</a><a href="#verification">結果の自己検証</a><a href="#stack">技術スタック</a><a href="#reproduce">再現手順</a><a href="#limitations">分析の限界</a></div></div><span class="title">大阪市 中古マンション分析 ポートフォリオ</span><a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis">GitHub</a><a class="tb" href="https://public.tableau.com/shared/KR589GQZX">Tableau</a></div><div class='wrap'><header class="hero"><p class="eyebrow">DATA ANALYSIS PORTFOLIO</p><h1>大阪市 中古マンション ―<br>仕入れで「次に調べる駅」をデータで絞り込む</h1><div class="intro"><p class="intro-h">ポートフォリオの目的</p><p>この分析は、中古マンションを<b>「安く仕入れて再販する／投資する」担当者のための道具</b>です。<br>彼らの仕事は、まずどのエリア（駅）の物件を調べに行くかを決めること。<br>ですが、大阪市には150以上の駅があり、その全部の相場を人手で当たるのは現実的ではありません。<br>かといって勘で絞ると、「<span class="warn">安いには訳がある</span>」物件を掴むリスクが残ります。</p><p>そこで<b>「どの駅から調べ始めるべきか」</b>を、誰がやっても同じ結果に辿り着けるよう、公開データだけで順位づけしました。<br>出すのは“買うべき物件”ではなく、<b>“次に足を運んで調べる価値がある駅”</b>。</p><p class="intro-sum">具体的には、大阪市の中古マンション成約データを起点に <b>151駅 → 10駅</b> まで自動でスクリーニングし、“安いには訳がある”逆選択の罠まで可視化しました。<br>以降のページでは、その<b>結果</b>・<b>設計上の判断</b>・<b>自己検証</b>の順で、考え方ごと辿れるようにまとめています。</p></div></header><section class="dash"><p class="dash-h"><a class="dash-link" href="https://public.tableau.com/shared/KR589GQZX">全体概要を Tableau で説明 →</a></p><div class="thumbs"><a href="https://public.tableau.com/shared/KR589GQZX"><img src="tableau/screenshots/01_summary.png" alt="サマリー"><span>① サマリー</span></a><a href="https://public.tableau.com/shared/KR589GQZX"><img src="tableau/screenshots/02_model_selection.png" alt="モデル選定と検証"><span>② モデル選定と検証</span></a><a href="https://public.tableau.com/shared/KR589GQZX"><img src="tableau/screenshots/03_priority_stations.png" alt="調査優先度の駅"><span>③ 調査優先度の駅</span></a></div></section><nav class="toc"><p class="toc-h">📑 目次 ― このポートフォリオの構成</p><ol><li><a href="#results">成果</a><span>― 151駅を10駅に絞った結果と本命駅</span></li><li><a href="#decisions">設計で大事にした判断</a><span>― なぜこのモデル/スコアにしたか（核心）</span></li><li><a href="#data">使用データ</a><span>― 公開データ3種と分析対象の範囲</span></li><li><a href="#flow">分析フロー</a><span>― 取得→前処理→モデル→スコア→可視化の流れ</span></li><li><a href="#preprocessing">データ前処理</a><span>― 外れ値・欠損をどう判断したか</span></li><li><a href="#evaluation">モデル評価とスコア</a><span>― 7モデル比較と調査優先度スコア</span></li><li><a href="#verification">結果の自己検証</a><span>― 自分の結果を疑って仕分けた</span></li><li><a href="#stack">技術スタック</a><span>― BigQuery / dbt / BigQuery ML / Tableau</span></li><li><a href="#reproduce">再現手順</a><span>― 誰でも同じ結果に辿れる</span></li><li><a href="#limitations">分析の限界</a><span>― 正直に言える前提と弱点</span></li></ol></nav><h2 id="results">1. 成果（何を解決したか）</h2>
-<p>人手で当たれば151駅ぶんの相場調査が必要なところを、<strong>調査すべき10駅まで自動で絞り込み</strong>ます。</p>
-<pre><code>2,106 件          151 駅            66 駅             本命 10 駅
-2025年の対象取引 → 相場比較が可能 → 10件以上で安定比較 → 調査対象を約1/14に圧縮
-</code></pre>
+@media(max-width:640px){.wrap{margin:10px;}.hero,.toc{padding-left:20px;padding-right:20px;}.toc,.dash{margin:20px;}.hero .intro{padding:18px 18px 16px;}.thumbs{grid-template-columns:1fr;}.hl{margin:6px 20px;}h2,.wrap>p,.wrap>ul,.wrap>ol,.wrap>blockquote,.wrap>pre,.wrap>h3,.wrap>hr,table,img{margin-left:20px;margin-right:20px;width:auto;}.hero h1{font-size:23px;}.funnel{margin:16px 20px;flex-direction:column;}.funnel .farrow{transform:rotate(90deg);margin:2px auto;}}</style></head><body><div class="nav"><div class="menu"><button class="menu-btn">☰ 目次</button><div class="menu-list"><a href="#results"><b>1.</b> 成果</a><a href="#decisions"><b>2.</b> 設計で大事にした判断</a><a href="#data"><b>3.</b> 使用データ</a><a href="#flow"><b>4.</b> 分析フロー</a><a href="#preprocessing"><b>5.</b> データ前処理</a><a href="#evaluation"><b>6.</b> モデル評価</a><a href="#score"><b>7.</b> 調査優先度スコア</a><a href="#verification"><b>8.</b> 結果の自己検証</a><a href="#stack"><b>9.</b> 技術スタック</a><a href="#reproduce"><b>10.</b> 再現手順</a><a href="#limitations"><b>11.</b> 分析の限界</a></div></div><span class="title">大阪市 中古マンション分析 ポートフォリオ</span><a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis">GitHub</a><a class="tb" href="https://public.tableau.com/shared/KR589GQZX">Tableau</a></div><div class='wrap'><header class="hero"><p class="eyebrow">DATA ANALYSIS PORTFOLIO</p><h1>大阪市 中古マンション ―<br>仕入れで「次に調べる駅」をデータで絞り込む</h1><div class="intro"><p class="intro-h">ポートフォリオの目的</p><p>この分析は、中古マンションを<b>「安く仕入れて再販する／投資する」担当者のための道具</b>だ。<br>彼らの仕事は、まずどのエリア（駅）の物件を調べに行くかを決めること。<br>だが、大阪市には150以上の駅があり、その全部の相場を人手で当たるのは現実的ではない。<br>かといって勘で絞ると、「<span class="warn">安いには訳がある</span>」物件を掴むリスクが残る。</p><p>そこで<b>「どの駅から調べ始めるべきか」</b>を、誰がやっても同じ結果に辿り着けるよう、公開データだけで順位づけした。<br>出すのは“買うべき物件”ではなく、<b>“次に足を運んで調べる価値がある駅”</b>。</p><p class="intro-sum">具体的には、大阪市の中古マンション成約データを起点に <b>151駅 → 10駅</b> まで自動でスクリーニングし、“安いには訳がある”逆選択の罠まで可視化した。<br>以降のページでは、その<b>結果</b>・<b>設計上の判断</b>・<b>自己検証</b>の順で、考え方ごと辿れるようにまとめた。</p></div></header><section class="dash"><p class="dash-h"><a class="dash-link" href="https://public.tableau.com/shared/KR589GQZX">全体概要を Tableau で説明 →</a></p><div class="thumbs"><a href="https://public.tableau.com/shared/KR589GQZX"><img src="tableau/screenshots/01_summary.png" alt="サマリー"><span>① サマリー</span></a><a href="https://public.tableau.com/shared/KR589GQZX"><img src="tableau/screenshots/02_model_selection.png" alt="モデル選定と検証"><span>② モデル選定と検証</span></a><a href="https://public.tableau.com/shared/KR589GQZX"><img src="tableau/screenshots/03_priority_stations.png" alt="調査優先度の駅"><span>③ 調査優先度の駅</span></a></div></section><nav class="toc"><p class="toc-h">📑 目次 ― このポートフォリオの構成</p><ol><li><a href="#results">成果</a><span>― 151駅を10駅に絞った結果と本命駅</span></li><li><a href="#decisions">設計で大事にした判断</a><span>― なぜこのモデル/スコアにしたか（核心）</span></li><li><a href="#data">使用データ</a><span>― 公開データ3種と分析対象の範囲</span></li><li><a href="#flow">分析フロー</a><span>― 取得→前処理→モデル→スコア→可視化の流れ</span></li><li><a href="#preprocessing">データ前処理</a><span>― 外れ値・欠損をどう判断したか</span></li><li><a href="#evaluation">モデル評価</a><span>― 7モデル比較とModel Cを選んだ理由</span></li><li><a href="#score">調査優先度スコア</a><span>― 5軸の配点と3パターンの感度分析</span></li><li><a href="#verification">結果の自己検証</a><span>― 自分の結果を疑って仕分けた</span></li><li><a href="#stack">技術スタック</a><span>― BigQuery / dbt / BigQuery ML / Tableau</span></li><li><a href="#reproduce">再現手順</a><span>― 誰でも同じ結果に辿れる</span></li><li><a href="#limitations">分析の限界</a><span>― 正直に言える前提と弱点</span></li></ol></nav><h2 id="results">1. 成果（何を解決したか）</h2>
+<p>人手で当たれば151駅ぶんの相場調査が必要なところを、<strong>調査すべき10駅まで自動で絞り込む</strong>。</p>
+<div class="funnel"><div class="fstep"><span class="fnum">2,106<small>件</small></span><span class="flabel">2025年の対象取引</span></div><div class="farrow">→</div><div class="fstep"><span class="fnum">151<small>駅</small></span><span class="flabel">相場比較が可能</span></div><div class="farrow">→</div><div class="fstep"><span class="fnum">66<small>駅</small></span><span class="flabel">10件以上で安定比較</span></div><div class="farrow">→</div><div class="fstep fgoal"><span class="fnum">本命 10<small>駅</small></span><span class="flabel">調査対象を約1/14に圧縮</span></div></div>
 <table>
 <thead>
 <tr>
@@ -92,10 +101,10 @@ a{color:#2f7ab5;}
 </tr>
 </tbody>
 </table>
-<p>配点パターンを切り替えると順位（＝仕入れ調査優先駅）が変わります。<strong>堺筋本町・玉造・大国町はどのパターンでも上位＝頑健な本命</strong>。割安重視では伝法・森ノ宮、リスク重視では谷町四丁目が浮上します（配点の意図に応じて狙いが動く）。</p>
+<p>配点パターンを切り替えると順位（＝仕入れ調査優先駅）が変わる。<strong>堺筋本町・玉造・大国町はどのパターンでも上位＝頑健な本命</strong>。割安重視では伝法・森ノ宮、リスク重視では谷町四丁目が浮上する（配点の意図に応じて狙いが動く）。</p>
 <p>※ スコア最上位は平野（割安重視85.6点）だが、<strong>旧耐震×改装不明が86%</strong>＝典型的な「安いには訳がある」逆選択のため本命から自動除外。詳細は §5。</p>
-<div class="hl"><h3>この分析の見どころ</h3><ol><li><b>逆選択をデータで弾く</b> ― 「安いには訳がある」物件を見分け、本命から外す。</li><li><b>精度1位のモデルを“あえて”不採用</b> ― 精度より目的（駅の順位の安定）を優先。</li><li><b>自分の結果を自分で検証</b> ― 出した上位10駅を疑い、本物/逆選択/要確認に仕分け。</li></ol></div><hr />
-<h2 id="decisions">5. 設計で大事にした4つの判断</h2>
+<p class="signpost">なぜこの10駅に絞り込めたのか？ ― その設計上の判断は<a href="#decisions">「2. 設計で大事にした4つの判断」</a>に、分析の全体像は<a href="https://public.tableau.com/shared/KR589GQZX">Tableau</a>にもまとめている →</p><hr />
+<h2 id="decisions">2. 設計で大事にした4つの判断</h2>
 <table>
 <thead>
 <tr>
@@ -123,7 +132,7 @@ a{color:#2f7ab5;}
 </tbody>
 </table>
 <hr />
-<h2 id="data">2. 使用データ</h2>
+<h2 id="data">3. 使用データ</h2>
 <table>
 <thead>
 <tr>
@@ -172,23 +181,23 @@ a{color:#2f7ab5;}
         ▼
    Tableau（3ダッシュボード：サマリー / モデル選定と検証 / 調査優先度）
 </code></pre>
-<p><strong>学習＝2021〜2024年／検証＝2025年</strong>。未来データで検証する時系列分割にして、情報漏洩（リーク）が起きないようにしました。</p>
+<p><strong>学習＝2021〜2024年／検証＝2025年</strong>。未来データで検証する時系列分割にして、情報漏洩（リーク）が起きないようにした。</p>
 <hr />
-<h2 id="preprocessing">データ前処理 ― 外れ値・欠損をどう判断したか</h2>
-<p>ここは自分が一番こだわった工程です。<strong>統計値で機械的に切らず、列ごとに理由を決めて処理</strong>しました（全工程の詳細は <a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis/blob/main/docs/eda_report.md">docs/eda_report.md</a>）。</p>
-<p><strong>欠損：補完するか／フラグ化するかを列ごとに判断</strong></p>
+<h2 id="preprocessing">5. データ前処理 ― 外れ値・欠損をどう判断したか</h2>
+<p>ここは一番こだわった工程。ルールで一律に切るのではなく、<strong>列ごとに「なぜそう処理するか」を決めてから</strong>手を動かした（全工程の詳細は <a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis/blob/main/docs/eda_report.md">docs/eda_report.md</a>）。</p>
+<p><strong>欠損データ：「埋める」か「不明のまま残す」かを、列ごとに使い分け</strong></p>
 <p><img alt="欠損率" src="outputs/figures/08_missing_rates.png" /></p>
 <ul>
-<li><strong>改装 95.7%欠損</strong>（大阪市）→ 補完すると情報を捏造してしまう。だから<strong>補完せず「不明」をフラグ化</strong>し、データ品質・リスクの材料にした。</li>
-<li><strong>建築年 1.9%・徒歩分 2.8%欠損</strong> → <strong>各Foldの訓練期間中央値で補完</strong>（未来情報を使わない＝リーク防止）し、補完フラグを付けた。</li>
-<li>徒歩分の範囲表記（「30分〜60分」等47件）・完全重複330行も見つけたので、数値化／重複フラグで対処した。</li>
+<li><strong>改装の有無は95.7%が空欄</strong>（大阪市の元データの特性）。ここを無理に推測で埋めると、ありもしない情報を作ってしまう。だから<strong>埋めずに「不明」という印を付け</strong>、その駅のデータの信頼性やリスクを測る材料に使った。</li>
+<li><strong>建築年（1.9%）・駅からの徒歩分（2.8%）はごく一部だけ欠損</strong>。こちらは<strong>周辺の標準的な値（中央値）で補い</strong>、「補完した」という印を残した。※このとき未来の取引データは使わず、過去のデータだけで埋めている（“答えを先に見てしまう”状態を防ぐため）。</li>
+<li>ほかにも「徒歩30分〜60分」のような曖昧な表記（47件）や、まったく同じ行の重複（330件）も見つけ、数値に直す・重複の印を付ける、で対処した。</li>
 </ul>
-<p><strong>外れ値：絶対IQRで機械的に切らず、現物と用途で対処</strong></p>
+<p><strong>外れ値（極端な値）：数式で機械的に消さず、中身を見て判断</strong></p>
 <p><img alt="築年帯別の㎡単価IQR" src="outputs/figures/04_box_pps_by_age.png" /></p>
 <ul>
-<li>フェンス外585件は除外を即決せず、<strong>log変換＋物理的にあり得ない値の除外</strong>で対処（D-002）。極端な個票は実データを目で見て判断した（事故物件／再建築不可か、データ誤りか）。</li>
-<li>分析スコープを<strong>面積20〜60㎡・徒歩20分・築5〜60年・価格500万以上</strong>に絞ることで、対象外の極端値を自然に落とした。</li>
-<li>安値専用フラグ（㎡単価&lt;5万）は価格下限と冗長で恒久0件だったので<strong>飾りとして外した</strong>。一方で<strong>高値側はノーガードだと正直に明記</strong>し、「駅相対の外れ値フラグ」を次の改善課題にした。</li>
+<li>統計的に「外れ値」と判定された585件も、<strong>すぐには消さなかった</strong>。まず価格のばらつきを扱いやすくする変換をかけ、そのうえで<strong>物理的にあり得ない値だけを除外</strong>。極端な1件1件は実際にデータを目で見て、「事故物件や再建築不可なのか、それとも入力ミスなのか」を見極めた。</li>
+<li>そもそも分析の対象を<strong>面積20〜60㎡・徒歩20分以内・築5〜60年・価格500万円以上</strong>に絞ったので、対象外の極端な物件は自然と外れる形にした。</li>
+<li>一方で正直な弱点も残る。安すぎる物件用のフィルタは価格の下限設定と重複して意味がなかったので<strong>外した</strong>が、<strong>高すぎる側のチェックは未対応</strong>であることを隠さず明記し、次の改善課題とした。</li>
 </ul>
 <hr />
 <h2 id="evaluation">6. モデル評価（テスト＝2025年・n=2,097）</h2>
@@ -196,8 +205,8 @@ a{color:#2f7ab5;}
 <thead>
 <tr>
 <th>モデル</th>
-<th>MAE（円/㎡）</th>
-<th>hit10（±10%以内）</th>
+<th>MAE（平均誤差・円/㎡）</th>
+<th>hit10（±10%以内の的中率）</th>
 <th>採用</th>
 </tr>
 </thead>
@@ -234,25 +243,27 @@ a{color:#2f7ab5;}
 </tr>
 </tbody>
 </table>
-<p>選んだCは Baseline 比 <strong>MAE 約35%改善</strong>。駅中央値㎡単価は各Foldの<strong>訓練期間のみ</strong>から作り（リーク防止）、公示地価は<strong>あえて予測モデルに入れず</strong>スコア側（地価補足15点）だけで使った（地価を予測に入れると「高い駅だから高い」と学習して<strong>割安シグナルを地価で説明してしまう</strong>ため、判定軸を分けた）。</p>
+<p>※ <strong>MAE</strong>＝予測した㎡単価が実際の価格から平均で何円ズレたか（小さいほど高精度）。<strong>hit10</strong>＝予測が実勢価格の ±10% 以内に収まった取引の割合（大きいほど良い）。</p>
+<p>選んだCは Baseline 比 <strong>MAE 約35%改善</strong>。駅ごとの相場（駅中央値㎡単価）は、未来の情報が混ざらないよう<strong>その検証で使う"学習期間"のデータだけ</strong>から計算している（過去を学んで未来を当てる設定なので、未来の答えを先取りする「リーク」を防ぐため）。</p>
+<p>また公示地価（国が出す土地の基準価格）は、<strong>あえて予測モデルには入れず</strong>、スコア側（地価補足15点）でだけ使った。地価を予測に入れると「地価が高い駅だから価格も高い」と学習してしまい、本来見つけたい<strong>“相場より割安”というシグナルを地価で説明し尽くしてしまう</strong>ためだ。→ 詳しい配点は「<a href="#score">調査優先度スコア</a>」にまとめている。</p>
 <blockquote>
 <p>※ §1ファネルの <strong>2,106件は2025年の全対象取引</strong>、評価の <strong>n=2,097 は予測特徴量が揃う行</strong>（差の9件は特徴量欠損で評価対象外）。</p>
 </blockquote>
 <ul>
-<li><strong>2025年だけに頼らない</strong>：もう1つの期間（Fold B＝2021–23で学習→2024で検証）でも確かめ、hit10 が 0.27→0.32 と大崩れしないことを見た（まぐれの1年ではない）。</li>
+<li><strong>2025年だけに頼らない（時期をずらして再検証）</strong>：学習と検証の期間の区切りをずらしてもう一度試し（2021〜23年で学習 → 2024年で答え合わせ）、的中率 hit10 が 0.27→0.32 と大きく崩れないことを確認した（たまたま2025年だけ当たった、ではない）。</li>
 <li><strong>何で効いているかも確認</strong>：標準化係数（ML.WEIGHTS）を見ると効くのは<strong>築年（-0.32で支配的）と駅相場</strong>で、<strong>改装はほぼ0＝価格に効かない</strong>とデータで裏取りした（<code>sql/bqml/04_inspect_weights.sql</code>）。</li>
 </ul>
-<h3>調査優先度スコア</h3>
+<h2 id="score">7. 調査優先度スコア</h2>
 <pre><code>調査優先度 = 割安度45 + 市場信頼性25 + 地価補足15 + データ品質15 − リスク減点20  （0〜100にクリップ）
 </code></pre>
 <p>配点に絶対の正解はないので、3パターン（バランス／割安重視／リスク重視）振っても上位に残る駅を <strong>安定候補</strong>、その中で建物リスクが低い駅を <strong>本命</strong> とした（感度分析）。</p>
 <p>▶ <strong>配点の詳細（5軸の作り方・3パターンの重み・設計判断）：<a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis/blob/main/docs/scoring_methodology.md">docs/scoring_methodology.md</a></strong></p>
 <p>※ 割安度の元になる「駅相対乖離」は、市場全体と駅内で<strong>二段に正規化</strong>して算出（一様な時点要因と駅ごとの空間要因を相殺し、その駅の相場に対する割安度を測る）。</p>
 <hr />
-<h2 id="verification">結果を疑う ― 上位駅の自己検証</h2>
+<h2 id="verification">8. 結果を疑う ― 上位駅の自己検証</h2>
 <p>ランキングを出して終わりにせず、<strong>自分が出した上位10駅を「逆選択の指紋」（旧耐震率・大型物件への偏り・薄商い・極端な外れ値の集中）で再検証</strong>した。結果は <strong>本物っぽい割安が4駅／逆選択が濃厚な1駅（平野）／要・現物確認が5駅</strong>。「出した結果を自分で疑う」ところまでを一次スクリーニングの責任範囲とした（詳細：<a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis/blob/main/docs/verification_notes.md">docs/verification_notes.md</a>）。</p>
 <hr />
-<h2 id="stack">3. 技術スタック</h2>
+<h2 id="stack">9. 技術スタック</h2>
 <table>
 <thead>
 <tr>
@@ -283,9 +294,9 @@ a{color:#2f7ab5;}
 </tr>
 </tbody>
 </table>
-<p>すべての数値はコードから再現可能です（§7 再現手順）。</p>
+<p>すべての数値はコードから再現できる（§7 再現手順）。</p>
 <hr />
-<h2 id="reproduce">7. 再現手順</h2>
+<h2 id="reproduce">10. 再現手順</h2>
 <pre><code class="language-bash"># 1. データ取得（reinfolib 公開フロントエンドキーを使用。環境変数で上書き可）
 #    REINFOLIB_KEY=&lt;key&gt; python scripts/download_transactions.py
 # 2. BigQuery に raw 投入（成約・駅マスタ・地価）
@@ -298,10 +309,10 @@ dbt run &amp;&amp; dbt test
 # 6. Tableau で mart_condo_price / mart_opportunity_list を接続
 </code></pre>
 <blockquote>
-<p>dbt接続には <code>~/.dbt/profiles.yml</code> が必要です。雛形は <a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis/blob/main/profiles.example.yml">profiles.example.yml</a>。<strong>認証情報・生データはリポジトリに含めていません</strong>（<code>.gitignore</code> で除外）。</p>
+<p>dbt接続には <code>~/.dbt/profiles.yml</code> が必要。雛形は <a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis/blob/main/profiles.example.yml">profiles.example.yml</a>。<strong>認証情報・生データはリポジトリに含めていない</strong>（<code>.gitignore</code> で除外）。</p>
 </blockquote>
 <hr />
-<h2>8. ディレクトリ構成</h2>
+<h2>ディレクトリ構成</h2>
 <pre><code>osaka-fudosan-dataanalysis/
 ├─ README.md
 ├─ dbt/models/            … staging(3) / intermediate(5) / marts(2)
@@ -309,7 +320,7 @@ dbt run &amp;&amp; dbt test
 │  ├─ checks/             … EDA・投入検証（01〜10）
 │  └─ bqml/               … モデル作成・評価・予測・係数・バイアス（00〜06）
 ├─ scripts/               … Python（データ取得・読み取り専用の検証）
-├─ docs/                  … work_log / decision_log / 検証 / 分析サマリーPDF
+├─ docs/                  … work_log / decision_log / 検証ノート
 ├─ data/
 │  ├─ raw/                … 生データ（非公開・.gitkeepのみ）
 │  ├─ gis/processed/      … 公開オープンデータの加工CSV
@@ -317,26 +328,28 @@ dbt run &amp;&amp; dbt test
 └─ tableau/               … ダッシュボード素材
 </code></pre>
 <hr />
-<h2 id="limitations">9. 分析の限界</h2>
+<h2 id="limitations">11. 分析の限界</h2>
 <ul>
 <li><strong>成約データであり売出ではない</strong>。最終判断は現物・謄本・管理状態・権利関係の確認が前提。</li>
 <li>対象は中古マンション・面積20〜60㎡・徒歩20分・築5〜60年に限定（市場の約32%）。全市場ではない。</li>
 <li><strong>改装情報は9割超が欠損</strong>（大阪市で95.7%）。「不明」をリスクとして扱った（逆選択判定の前提）。</li>
 <li>「割安＝相場より下振れ」は<strong>好機か衰退かを単独では判別できない</strong>。上位駅の逆選択検証（<a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis/blob/main/docs/verification_notes.md">docs/verification_notes.md</a>）と現物確認が前提。</li>
 </ul>
-<h2>10. 今後の改善</h2>
+<h2>今後の改善</h2>
 <ul>
 <li>売出データ・管理状態・成約遅延の補正の取り込み</li>
 <li>駅相対の外れ値フラグ（個票レベルの異常検知）</li>
 <li>駅×時点トレンドの慎重な導入（順位の歪みを増やさない範囲で）</li>
+<li><strong>予測モデルの特徴量拡充</strong>：間取りなど未使用の属性や、所在階・向き・総戸数の追加取得で、的中率（hit10）の底上げを図る</li>
+<li><strong>対象セグメントの横展開</strong>：面積20〜60㎡（市場の約32%）に絞った枠組みを、60㎡超のファミリー向けなど別セグメントへ同手法で広げる</li>
+<li><strong>定期更新の自動化</strong>：四半期ごとに公開データを取り込み直し、dbt → BigQuery ML → Tableau を自動で再実行して順位を更新するパイプライン化</li>
 </ul>
 <hr />
 <h2>制作にあたって（使用ツールと役割分担）</h2>
-<p>本プロジェクトの実装にはAIコーディング支援（Claude Code）を活用しています。一方で、分析設計の中核 ―― <strong>分析対象の絞り込み、予測特徴量とスコア項目の分離、モデルの採用判断（Model C vs F）、調査優先度スコアの配点、公開データの限界の線引き</strong> ―― はすべて自分で判断し、その理由を <a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis/blob/main/docs/decision_log.md">docs/decision_log.md</a> に記録しています。コードを書く速度をAIで上げつつ、「何を・なぜそう判断したか」を自分の言葉で説明できる状態を重視しました。</p>
+<p>本プロジェクトの実装にはAIコーディング支援（Claude Code）を活用している。一方で、分析設計の中核 ―― <strong>分析対象の絞り込み、予測特徴量とスコア項目の分離、モデルの採用判断（Model C vs F）、調査優先度スコアの配点、公開データの限界の線引き</strong> ―― はすべて自分で判断し、その理由を <a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis/blob/main/docs/decision_log.md">docs/decision_log.md</a> に記録した。コードを書く速度をAIで上げつつ、「何を・なぜそう判断したか」を自分の言葉で説明できる状態を重視した。</p>
 <h2>リンク</h2>
 <ul>
 <li>📊 Tableau Public：https://public.tableau.com/shared/KR589GQZX?:display_count=n&amp;:origin=viz_share_link</li>
-<li>📄 分析サマリー（3枚PDF）：<a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis/blob/main/docs/osaka_condo_analysis_summary_3pages.pdf">docs/osaka_condo_analysis_summary_3pages.pdf</a></li>
-<li>✉️ 連絡先：14ryoaihararyo@gmail.com</li>
+<li>💻 GitHub リポジトリ：https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis</li>
 </ul>
-<p><sub>本リポジトリは個人のポートフォリオです。数値は実装時点（2026年）の公開データに基づきます。</sub></p></div></body></html>
+<p><sub>本リポジトリは個人のポートフォリオ。数値は実装時点（2026年）の公開データに基づく。</sub></p></div></body></html>
