@@ -13,9 +13,7 @@ GIS = os.path.join(os.path.dirname(__file__), "..", "data", "gis")
 
 JOBS = [
     # (入力geojson, 出力csv)
-    (r"N02-24_GML\UTF-8\N02-24_Station.geojson", "station_master_2024.csv"),
     (r"N02-25_GML\N02-25_GML\UTF-8\N02-25_Station.geojson", "station_master_2025.csv"),
-    (r"L01-24_27_GML\L01-24_27_GML\L01-24_27.geojson", "land_price_2024.csv"),
     (r"L01-25_27_GML\L01-25_27_GML\L01-25_27.geojson", "land_price_2025.csv"),
 ]
 

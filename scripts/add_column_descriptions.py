@@ -103,9 +103,7 @@ LP_SERIES = "年次別公示価格系列（円/㎡。新しい列ほど近年。
 
 TABLES = [
     ("raw_transactions", TX, None, None),
-    ("raw_station_master_2024", SM, None, None),
     ("raw_station_master_2025", SM, None, None),
-    ("raw_land_price_2024", LP, LP_GENERIC, LP_SERIES),
     ("raw_land_price_2025", LP, LP_GENERIC, LP_SERIES),
 ]
 

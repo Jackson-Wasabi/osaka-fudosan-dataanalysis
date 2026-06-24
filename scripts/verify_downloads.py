@@ -46,7 +46,7 @@ for year in range(2020, 2026):
 
 print()
 print("===== GISzip =====")
-for name in ["N02-24_GML.zip", "N02-25_GML.zip", "L01-24_27_GML.zip", "L01-25_27_GML.zip"]:
+for name in ["N02-25_GML.zip", "L01-25_27_GML.zip"]:
     path = os.path.join(NEW, "gis", "raw", name)
     if not os.path.exists(path):
         print(f"{name}: MISSING")

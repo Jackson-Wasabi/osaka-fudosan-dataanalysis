@@ -262,7 +262,7 @@
 - sql/checks/01_raw_load_validation.sql も消失していたため再作成（未コミットだったため git から復元不可。以後は作成都度コミットを検討）
 
 ### 再ロード結果（全9ロード成功・内容無加工）
-- raw_transactions 47,386 / raw_station_master_2024 10,235 / _2025 10,234 / raw_land_price_2024 1,715 / _2025 1,687 — すべてソースと一致
+- raw_transactions 47,386 / raw_station_master_2025 10,234 / raw_land_price_2025 1,687 — すべてソースと一致
 
 ### 列と値の対応検証（カラムシフト検出）
 - raw_transactions: 13項目のドメイン検査（種類・区分・市区町村コード・都道府県・徒歩分・価格・面積・建築年・構造・取引時期・改装 等）**すべて0件 = 列ズレなし**
@@ -279,10 +279,10 @@
 - 完全重複行: 2021:56 / 2022:46 / 2023:68 / 2024:60 / 2025:100（計330行。staging で重複の扱いを決定する）
 
 ### GIS 変換（scripts/gis_to_csv.py）
-- ZIP展開: N02-24/25、L01-24/25 → data/gis/raw/ 配下（ZIP原本保持）
+- ZIP展開: N02-25、L01-25 → data/gis/raw/ 配下（ZIP原本保持）
 - GeoJSON→CSV（属性値は無変更、ジオメトリから lon/lat のみ算出）→ data/gis/processed/
-  - station_master_2024.csv: 10,235行（全国） / station_master_2025.csv: 10,234行
-  - land_price_2024.csv: 1,715行×146列 / land_price_2025.csv: 1,687行×148列（大阪府）
+  - station_master_2025.csv: 10,234行（全国）
+  - land_price_2025.csv: 1,687行×148列（大阪府）
 
 ### BigQuery 投入
 - GCPプロジェクト新規作成: `osaka-fudosan-dataanalysis`（課金は旧プロジェクトと同一アカウントに紐付け）
@@ -292,8 +292,8 @@
 | テーブル | 行数 | ソースとの一致 |
 |---|---|---|
 | raw_transactions（2021〜2025の5ファイル追記） | 47,386 | 一致 |
-| raw_station_master_2024 / _2025 | 10,235 / 10,234 | 一致 |
-| raw_land_price_2024 / _2025 | 1,715 / 1,687 | 一致 |
+| raw_station_master_2025 | 10,234 | 一致 |
+| raw_land_price_2025 | 1,687 | 一致 |
 
 ### 投入後検証
 - 件数: 全テーブルでソースCSVと完全一致
@@ -343,10 +343,8 @@
 | raw/osaka_condo_seiyaku_2023/Osaka Prefecture_20231_20234.csv | 8,975 | 旧ファイルとMD5一致 |
 | raw/osaka_condo_seiyaku_2024/Osaka Prefecture_20241_20244.csv | 9,705 | 旧ファイルとMD5一致 |
 | raw/osaka_condo_seiyaku_2025/Osaka Prefecture_20251_20254.csv | 11,094 | 新規（2025Q1〜Q4、大容量のためサーバ返却URL経由で取得） |
-| gis/raw/N02-24_GML.zip | 22エントリ | ZIP整合性OK・旧ファイルとMD5一致 |
-| gis/raw/N02-25_GML.zip | 24エントリ | ZIP整合性OK（新規） |
-| gis/raw/L01-24_27_GML.zip | 8エントリ | ZIP整合性OK・旧ファイルとMD5一致 |
-| gis/raw/L01-25_27_GML.zip | 8エントリ | ZIP整合性OK（新規） |
+| gis/raw/N02-25_GML.zip | 24エントリ | ZIP整合性OK |
+| gis/raw/L01-25_27_GML.zip | 8エントリ | ZIP整合性OK |
 
 - 全CSVで 種類=中古マンション等のみ / 価格情報区分=成約価格情報のみ / 都道府県=大阪府のみ / 四半期4区分そろい を確認
 - 2021〜2025 合計データ行数: 47,386行（参考: 大阪市内行 2021:4,124 / 2022:4,529 / 2023:4,724 / 2024:5,200 / 2025:6,036）
