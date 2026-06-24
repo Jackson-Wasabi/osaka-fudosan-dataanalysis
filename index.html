@@ -6,9 +6,9 @@ body{font-family:"Yu Gothic","Meiryo","Hiragino Kaku Gothic ProN",sans-serif;col
 .nav a{color:#14304a;background:#fff;padding:6px 14px;border-radius:20px;text-decoration:none;font-size:13px;font-weight:bold;}
 .nav a.tb{background:#e8941a;color:#fff;}
 .wrap{max-width:920px;margin:24px auto;background:#fff;padding:28px 40px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.08);}
-h1{font-size:24px;color:#14304a;border-bottom:3px solid #14304a;padding-bottom:8px;}
-h2{font-size:18px;color:#fff;background:#14304a;padding:7px 14px;border-radius:5px;margin-top:30px;}
-h3{font-size:15px;color:#14304a;border-left:5px solid #2f7ab5;padding-left:9px;}
+h1{font-size:24px;color:#14304a;border-bottom:3px solid #14304a;padding-bottom:8px;scroll-margin-top:60px;}
+h2{font-size:18px;color:#fff;background:#14304a;padding:7px 14px;border-radius:5px;margin-top:30px;scroll-margin-top:60px;}
+h3{font-size:15px;color:#14304a;border-left:5px solid #2f7ab5;padding-left:9px;scroll-margin-top:60px;}
 table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px;}
 th,td{border:1px solid #b9c6d2;padding:6px 10px;text-align:left;vertical-align:top;}
 th{background:#dce6ef;color:#14304a;}
@@ -19,13 +19,27 @@ img{max-width:100%;border:1px solid #d0d9e2;border-radius:6px;margin:8px 0;displ
 blockquote{border-left:4px solid #c5d2de;background:#f6f9fc;margin:10px 0;padding:8px 14px;color:#34495e;}
 a{color:#2f7ab5;}
 hr{border:none;border-top:1px solid #d0d9e2;margin:18px 0;}
+ol li,ul li{margin:4px 0;}
 @media(max-width:640px){.wrap{padding:18px;margin:10px;}}
 </style></head><body><div class="nav"><span class="title">大阪市 中古マンション分析 ポートフォリオ</span><a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis">💻 GitHub（コード）</a><a class="tb" href="https://public.tableau.com/shared/KR589GQZX">🔗 Tableau（触れる版）</a></div><div class='wrap'><h1>大阪市 中古マンション ― 仕入れで「次に調べる駅」をデータで絞り込む</h1>
-<p>大阪市の中古マンション成約データに駅情報と公示地価を組み合わせ、<strong>予測㎡単価と実取引㎡単価の乖離</strong>から「相場より割安に見える＝追加調査すべき駅」を抽出する一次スクリーニング分析です。市場の信頼性・地価・データ品質・建物リスクを加味した<strong>調査優先度スコア</strong>を作り、Tableauで可視化しました。</p>
 <blockquote>
-<p><strong>想定ユーザー：</strong> 中古マンションの買取再販／投資の<strong>仕入れ担当</strong>。「どの物件を買うか」ではなく、その手前の「<strong>限られた時間でどの駅から調べるか</strong>」を決める初期スクリーニングを支援します。</p>
-<p>本分析は公開データに基づく一次スクリーニングであり、<strong>「買うべき物件」を断定するものではありません</strong>。実際の仕入れ・投資判断には物件状態・権利関係・管理状況・周辺環境などの追加調査（現物・謄本確認）が必要です。</p>
+<p><strong>一言でいうと：</strong> 公開データだけで、大阪市の中古マンション「仕入れで次に調べるべき駅」を <strong>151駅 → 10駅</strong> まで自動で絞り込む一次スクリーニング。（想定ユーザー＝買取再販／投資の<strong>仕入れ担当</strong>）</p>
 </blockquote>
+<h3>📌 このポートフォリオの目的</h3>
+<p>仕入れの初動では、市内100以上の駅を人手で相場確認するのは非現実的。かといって直感で絞ると「安いには訳がある」物件を掴むリスクがある。そこで <strong>「どの駅から調べるべきか」を公開データで再現可能に順位づけし、同時に逆選択（訳あり）の罠を可視化</strong> することを目的にしました。
+※ これは調査候補を絞る道具で、<strong>「買うべき物件」を断定するものではありません</strong>（最終判断は現物・謄本確認が前提）。</p>
+<h3>🔑 3つの見どころ</h3>
+<ol>
+<li><strong>逆選択をデータで弾く</strong> ― 「安いには訳がある」物件を自動で見分け、本命から外す（→ <a href="#decisions">設計の判断</a>）</li>
+<li><strong>精度1位のモデルを“あえて”不採用</strong> ― 精度より目的（駅の順位の安定）を優先（→ <a href="#evaluation">モデル評価</a>）</li>
+<li><strong>自分の結果を自分で検証</strong> ― 出した上位10駅を疑って仕分け（→ <a href="#verification">結果の自己検証</a>）</li>
+</ol>
+<h3>📑 目次</h3>
+<ul>
+<li><strong>［概要］</strong> <a href="#results">成果</a> ・ <a href="#data">使用データ</a> ・ <a href="#stack">技術スタック</a> ・ <a href="#flow">分析フロー</a></li>
+<li><strong>［手法］</strong> <a href="#preprocessing">データ前処理</a> ・ <a href="#decisions">設計の4判断</a> ・ <a href="#evaluation">モデル評価とスコア</a></li>
+<li><strong>［検証・その他］</strong> <a href="#verification">結果の自己検証</a> ・ <a href="#reproduce">再現手順</a> ・ <a href="#limitations">分析の限界</a></li>
+</ul>
 <p>💻 <strong>GitHub：</strong> https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis ／ 🔗 <strong>Tableau Public：</strong> https://public.tableau.com/shared/KR589GQZX?:display_count=n&amp;:origin=viz_share_link ／ 📄 <strong>分析サマリー（3枚PDF）：</strong> <a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis/blob/main/docs/osaka_condo_analysis_summary_3pages.pdf">docs/osaka_condo_analysis_summary_3pages.pdf</a></p>
 <hr />
 <h2>ダッシュボード（Tableau）</h2>
@@ -39,7 +53,7 @@ hr{border:none;border-top:1px solid #d0d9e2;margin:18px 0;}
 <p><strong>③ 調査優先度の高い駅</strong> ― 配点切替で変わる駅ランキングと地図（本命／要確認）
 <img alt="調査優先度の高い駅" src="tableau/screenshots/03_priority_stations.png" /></p>
 <hr />
-<h2>1. 成果（何を解決したか）</h2>
+<h2><a id="results"></a>1. 成果（何を解決したか）</h2>
 <p>人手で当たれば151駅ぶんの相場調査が必要なところを、<strong>調査すべき10駅まで自動で絞り込み</strong>ます。</p>
 <pre><code>2,106 件          151 駅            66 駅             本命 10 駅
 2025年の対象取引 → 相場比較が可能 → 10件以上で安定比較 → 調査対象を約1/14に圧縮
@@ -69,7 +83,7 @@ hr{border:none;border-top:1px solid #d0d9e2;margin:18px 0;}
 <p>配点パターンを切り替えると順位（＝仕入れ調査優先駅）が変わります。<strong>堺筋本町・玉造・大国町はどのパターンでも上位＝頑健な本命</strong>。割安重視では伝法・森ノ宮、リスク重視では谷町四丁目が浮上します（配点の意図に応じて狙いが動く）。</p>
 <p>※ スコア最上位は平野（割安重視85.6点）だが、<strong>旧耐震×改装不明が86%</strong>＝典型的な「安いには訳がある」逆選択のため本命から自動除外。詳細は §5。</p>
 <hr />
-<h2>2. 使用データ</h2>
+<h2><a id="data"></a>2. 使用データ</h2>
 <table>
 <thead>
 <tr>
@@ -98,7 +112,7 @@ hr{border:none;border-top:1px solid #d0d9e2;margin:18px 0;}
 </table>
 <p><strong>分析対象の絞り込み：</strong> 大阪市／中古マンション／面積20〜60㎡（<strong>投資用ワンルーム〜コンパクト帯＝買取再販の主戦場</strong>）／徒歩20分以内／築5〜60年（＝市場の約32%）。</p>
 <hr />
-<h2>3. 技術スタック</h2>
+<h2><a id="stack"></a>3. 技術スタック</h2>
 <table>
 <thead>
 <tr>
@@ -131,7 +145,7 @@ hr{border:none;border-top:1px solid #d0d9e2;margin:18px 0;}
 </table>
 <p>すべての数値はコードから再現可能です（§7 再現手順）。</p>
 <hr />
-<h2>4. 分析フロー</h2>
+<h2><a id="flow"></a>4. 分析フロー</h2>
 <pre><code>不動産情報ライブラリ / 国土数値情報（公開データ）
         │  Python（取得）
         ▼
@@ -153,7 +167,7 @@ hr{border:none;border-top:1px solid #d0d9e2;margin:18px 0;}
 </code></pre>
 <p><strong>学習＝2021〜2024年／検証＝2025年</strong>。未来データで検証する時系列分割にして、情報漏洩（リーク）が起きないようにしました。</p>
 <hr />
-<h2>データ前処理 ― 外れ値・欠損をどう判断したか</h2>
+<h2><a id="preprocessing"></a>データ前処理 ― 外れ値・欠損をどう判断したか</h2>
 <p>ここは自分が一番こだわった工程です。<strong>統計値で機械的に切らず、列ごとに理由を決めて処理</strong>しました（全工程の詳細は <a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis/blob/main/docs/eda_report.md">docs/eda_report.md</a>）。</p>
 <p><strong>欠損：補完するか／フラグ化するかを列ごとに判断</strong></p>
 <p><img alt="欠損率" src="outputs/figures/08_missing_rates.png" /></p>
@@ -170,7 +184,7 @@ hr{border:none;border-top:1px solid #d0d9e2;margin:18px 0;}
 <li>安値専用フラグ（㎡単価&lt;5万）は価格下限と冗長で恒久0件だったので<strong>飾りとして外した</strong>。一方で<strong>高値側はノーガードだと正直に明記</strong>し、「駅相対の外れ値フラグ」を次の改善課題にした。</li>
 </ul>
 <hr />
-<h2>5. 設計で大事にした4つの判断</h2>
+<h2><a id="decisions"></a>5. 設計で大事にした4つの判断</h2>
 <table>
 <thead>
 <tr>
@@ -198,7 +212,7 @@ hr{border:none;border-top:1px solid #d0d9e2;margin:18px 0;}
 </tbody>
 </table>
 <hr />
-<h2>6. モデル評価（テスト＝2025年・n=2,097）</h2>
+<h2><a id="evaluation"></a>6. モデル評価（テスト＝2025年・n=2,097）</h2>
 <table>
 <thead>
 <tr>
@@ -256,10 +270,10 @@ hr{border:none;border-top:1px solid #d0d9e2;margin:18px 0;}
 <p>▶ <strong>配点の詳細（5軸の作り方・3パターンの重み・設計判断）：<a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis/blob/main/docs/scoring_methodology.md">docs/scoring_methodology.md</a></strong></p>
 <p>※ 割安度の元になる「駅相対乖離」は、市場全体と駅内で<strong>二段に正規化</strong>して算出（一様な時点要因と駅ごとの空間要因を相殺し、その駅の相場に対する割安度を測る）。</p>
 <hr />
-<h2>結果を疑う ― 上位駅の自己検証</h2>
+<h2><a id="verification"></a>結果を疑う ― 上位駅の自己検証</h2>
 <p>ランキングを出して終わりにせず、<strong>自分が出した上位10駅を「逆選択の指紋」（旧耐震率・大型物件への偏り・薄商い・極端な外れ値の集中）で再検証</strong>した。結果は <strong>本物っぽい割安が4駅／逆選択が濃厚な1駅（平野）／要・現物確認が5駅</strong>。「出した結果を自分で疑う」ところまでを一次スクリーニングの責任範囲とした（詳細：<a href="https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis/blob/main/docs/verification_notes.md">docs/verification_notes.md</a>）。</p>
 <hr />
-<h2>7. 再現手順</h2>
+<h2><a id="reproduce"></a>7. 再現手順</h2>
 <pre><code class="language-bash"># 1. データ取得（reinfolib 公開フロントエンドキーを使用。環境変数で上書き可）
 #    REINFOLIB_KEY=&lt;key&gt; python scripts/download_transactions.py
 # 2. BigQuery に raw 投入（成約・駅マスタ・地価）
@@ -291,7 +305,7 @@ dbt run &amp;&amp; dbt test
 └─ tableau/               … ダッシュボード素材
 </code></pre>
 <hr />
-<h2>9. 分析の限界</h2>
+<h2><a id="limitations"></a>9. 分析の限界</h2>
 <ul>
 <li><strong>成約データであり売出ではない</strong>。最終判断は現物・謄本・管理状態・権利関係の確認が前提。</li>
 <li>対象は中古マンション・面積20〜60㎡・徒歩20分・築5〜60年に限定（市場の約32%）。全市場ではない。</li>
