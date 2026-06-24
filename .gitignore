@@ -55,17 +55,5 @@ docs/interview_notes.md
 docs/_interview_prep_GA.md
 docs/project_brief.md
 
-# READMEから生成する派生PDF（添付用・ローカル）
-portfolio_overview.pdf
-
-# ポートフォリオのデザイン版バックアップ（必要なら復元用・ローカル）
-index_redesign_backup.html
-
-# 目次改善版の比較用ドラフト（採用したらindex.htmlへ反映）
-index_v2.html
-index_v3.html
-_gen_v4.py
-index_v4.html
-index_v5.html
+# ポートフォリオHTMLのビルドスクリプト（ローカル専用。README→index.htmlを生成）
 _gen_v6.py
-index_v6.html
