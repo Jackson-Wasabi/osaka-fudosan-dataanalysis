@@ -6,7 +6,7 @@
 >
 > 本分析は公開データに基づく一次スクリーニングであり、**「買うべき物件」を断定するものではありません**。実際の仕入れ・投資判断には物件状態・権利関係・管理状況・周辺環境などの追加調査（現物・謄本確認）が必要です。
 
-🔗 **Tableau Public：** https://public.tableau.com/shared/KR589GQZX?:display_count=n&:origin=viz_share_link ／ 📄 **分析サマリー（3枚PDF）：** [docs/osaka_condo_analysis_summary_3pages.pdf](docs/osaka_condo_analysis_summary_3pages.pdf)
+💻 **GitHub：** https://github.com/Jackson-Wasabi/osaka-fudosan-dataanalysis ／ 🔗 **Tableau Public：** https://public.tableau.com/shared/KR589GQZX?:display_count=n&:origin=viz_share_link ／ 📄 **分析サマリー（3枚PDF）：** [docs/osaka_condo_analysis_summary_3pages.pdf](docs/osaka_condo_analysis_summary_3pages.pdf)
 
 ---
 

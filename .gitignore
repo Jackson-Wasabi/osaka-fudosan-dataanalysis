@@ -54,3 +54,6 @@ scripts/shot.ps1
 docs/interview_notes.md
 docs/_interview_prep_GA.md
 docs/project_brief.md
+
+# READMEから生成する派生PDF（添付用・ローカル）
+portfolio_overview.pdf
