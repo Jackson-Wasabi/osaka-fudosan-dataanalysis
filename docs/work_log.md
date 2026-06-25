@@ -363,7 +363,7 @@
 ### 確認結果
 | ツール | 状態 | 詳細 |
 |---|---|---|
-| gcloud 認証 | OK | アカウント: ononoomichi@gmail.com (ACTIVE) |
+| gcloud 認証 | OK | アカウント: （個人Googleアカウント・非公開） (ACTIVE) |
 | gcloud プロジェクト | OK | osaka-condo-analysis |
 | bq | OK | データセット2件: `osaka_real_estate`, `osaka_real_estate_osaka_real_estate`（後者は旧作業の誤作成分。削除候補だが今回は触らない） |
 | dbt | OK | dbt-core 1.11.11 / dbt-bigquery 1.9.0（Python 3.12 の dbt.exe） |
