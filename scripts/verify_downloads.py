@@ -6,8 +6,13 @@ import io
 import os
 import zipfile
 
-NEW = r"C:\Users\sn\Documents\データ分析\osaka-fudosan-dataanalysis\data"
-OLD = r"C:\Users\sn\Documents\データ分析\osaka-condo-station-opportunity-analysis\data"
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+NEW = os.path.join(REPO, "data")
+# 旧プロジェクトとの突合（任意）。環境変数 OLD_DATA_DIR で上書き可。未設定なら隣接フォルダを既定にする。
+OLD = os.environ.get(
+    "OLD_DATA_DIR",
+    os.path.join(os.path.dirname(REPO), "osaka-condo-station-opportunity-analysis", "data"),
+)
 
 def md5(path):
     h = hashlib.md5()
