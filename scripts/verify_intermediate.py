@@ -6,7 +6,7 @@ gcloud サブプロセスのハングを回避するため、ADC コピーを明
 import os
 from google.cloud import bigquery
 
-PROJ = "osaka-fudosan-dataanalysis"
+PROJ = os.environ.get("GOOGLE_CLOUD_PROJECT", "osaka-fudosan-dataanalysis")
 STG = f"{PROJ}.osaka_real_estate_staging"
 INT = f"{PROJ}.osaka_real_estate_intermediate"
 client = bigquery.Client(project=PROJ)

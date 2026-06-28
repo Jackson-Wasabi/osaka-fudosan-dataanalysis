@@ -1,0 +1,16 @@
+# 分析パイプラインの再現に必要な主要ライブラリ
+# Python 3.12 で動作確認（dbt は 3.14 で mashumaro エラーのため 3.12 を推奨）
+#   pip install -r requirements.txt
+
+# データ変換・モデリング（staging / intermediate / marts + BigQuery ML）
+dbt-bigquery>=1.7,<2.0
+
+# BigQuery クライアント（取得・予測・読み取り専用の検証スクリプト）
+google-cloud-bigquery>=3.11,<4.0
+
+# 数値処理・図の生成（outputs/figures）
+numpy>=1.24
+matplotlib>=3.7
+
+# PDF テキスト抽出（手順書の参照用・任意）
+pypdf>=3.17

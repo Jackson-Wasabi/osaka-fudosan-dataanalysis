@@ -7,7 +7,7 @@ import os
 import re
 from google.cloud import bigquery
 
-PROJ = "osaka-fudosan-dataanalysis"
+PROJ = os.environ.get("GOOGLE_CLOUD_PROJECT", "osaka-fudosan-dataanalysis")
 DS = f"{PROJ}.osaka_real_estate"
 SQL_FILE = os.path.join(os.path.dirname(__file__), "..", "sql", "bqml", "02_evaluate.sql")
 client = bigquery.Client(project=PROJ)

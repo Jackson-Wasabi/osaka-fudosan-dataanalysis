@@ -12,7 +12,7 @@ import os
 import subprocess
 from datetime import date
 
-PROJECT = "osaka-fudosan-dataanalysis"
+PROJECT = os.environ.get("GOOGLE_CLOUD_PROJECT", "osaka-fudosan-dataanalysis")
 ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
 SQL_DIR = os.path.join(ROOT, "sql", "checks")
 TBL_DIR = os.path.join(ROOT, "outputs", "tables")

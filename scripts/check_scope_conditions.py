@@ -1,6 +1,7 @@
+import os
 from google.cloud import bigquery
 
-client = bigquery.Client(project="osaka-fudosan-dataanalysis")
+client = bigquery.Client(project=os.environ.get("GOOGLE_CLOUD_PROJECT", "osaka-fudosan-dataanalysis"))
 
 sql = """
 WITH base AS (

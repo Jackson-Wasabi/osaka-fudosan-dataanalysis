@@ -6,7 +6,7 @@ gcloud ハング回避のため ADC コピーを明示指定。
 import os
 from google.cloud import bigquery
 
-PROJ = "osaka-fudosan-dataanalysis"
+PROJ = os.environ.get("GOOGLE_CLOUD_PROJECT", "osaka-fudosan-dataanalysis")
 TBL = f"{PROJ}.osaka_real_estate.predictions_model_c"
 SQL_FILE = os.path.join(os.path.dirname(__file__), "..", "sql", "bqml", "03_predict.sql")
 client = bigquery.Client(project=PROJ)

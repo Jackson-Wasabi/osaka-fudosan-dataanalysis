@@ -6,7 +6,7 @@
 import os
 from google.cloud import bigquery
 
-PROJ = "osaka-fudosan-dataanalysis"
+PROJ = os.environ.get("GOOGLE_CLOUD_PROJECT", "osaka-fudosan-dataanalysis")
 MART = f"{PROJ}.osaka_real_estate_marts.mart_opportunity_list"
 client = bigquery.Client(project=PROJ)
 

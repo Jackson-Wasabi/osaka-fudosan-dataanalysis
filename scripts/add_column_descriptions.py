@@ -8,7 +8,7 @@ import os
 import subprocess
 import tempfile
 
-PROJECT = "osaka-fudosan-dataanalysis"
+PROJECT = os.environ.get("GOOGLE_CLOUD_PROJECT", "osaka-fudosan-dataanalysis")
 DATASET = "osaka_real_estate"
 
 TX = {
